@@ -3,10 +3,7 @@
 /* (C)ChaN, 2017                                                          */
 /*------------------------------------------------------------------------*/
 
-
-#include "ff.h"
-
-
+#include <fatfs.h>
 
 #if FF_USE_LFN == 3	/* Dynamic memory allocation */
 
