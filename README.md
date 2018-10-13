@@ -13,6 +13,30 @@ Here it is being refactored for the following:
  - Easing the integration of the library in operating system projects.
  - Easing the integration of the library in hosted environments.
 
+Building
+========
+
+Currently, CMake is used to build the project.
+
+On Debian systems, you can install it like this:
+
+```
+sudo apt install cmake
+```
+
+On Windows and macOS, there are downloads available from [https://cmake.org/download](their website.)
+
+Once it's installed, you can build the project like this:
+
+```
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+
+When the dust settles on the refactoring work, more build systems (such as GNU Make) will be added.
+
 License
 =======
 
