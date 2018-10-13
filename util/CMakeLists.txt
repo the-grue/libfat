@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 
 add_executable("ffutil"
+	"arg-iterator.h"
+	"arg-iterator.c"
 	"main.c"
 	"time.c")
 
