@@ -4377,60 +4377,6 @@ FRESULT f_readdir (
 	LEAVE_FF(fs, res);
 }
 
-
-
-#if FF_USE_FIND
-/*-----------------------------------------------------------------------*/
-/* Find Next File                                                        */
-/*-----------------------------------------------------------------------*/
-
-FRESULT f_findnext (
-	DIR* dp,		/* Pointer to the open directory object */
-	FILINFO* fno	/* Pointer to the file information structure */
-)
-{
-	FRESULT res;
-
-
-	for (;;) {
-		res = f_readdir(dp, fno);		/* Get a directory item */
-		if (res != FR_OK || !fno || !fno->fname[0]) break;	/* Terminate if any error or end of directory */
-		if (pattern_matching(dp->pat, fno->fname, 0, 0)) break;		/* Test for the file name */
-#if FF_USE_LFN && FF_USE_FIND == 2
-		if (pattern_matching(dp->pat, fno->altname, 0, 0)) break;	/* Test for alternative name if exist */
-#endif
-	}
-	return res;
-}
-
-
-
-/*-----------------------------------------------------------------------*/
-/* Find First File                                                       */
-/*-----------------------------------------------------------------------*/
-
-FRESULT f_findfirst (
-	DIR* dp,				/* Pointer to the blank directory object */
-	FILINFO* fno,			/* Pointer to the file information structure */
-	const TCHAR* path,		/* Pointer to the directory to open */
-	const TCHAR* pattern	/* Pointer to the matching pattern */
-)
-{
-	FRESULT res;
-
-
-	dp->pat = pattern;		/* Save pointer to pattern string */
-	res = f_opendir(dp, path);		/* Open the target directory */
-	if (res == FR_OK) {
-		res = f_findnext(dp, fno);	/* Find the first item */
-	}
-	return res;
-}
-
-#endif	/* FF_USE_FIND */
-
-
-
 #if FF_FS_MINIMIZE == 0
 /*-----------------------------------------------------------------------*/
 /* Get File Status                                                       */
