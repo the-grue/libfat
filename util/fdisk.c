@@ -1,4 +1,4 @@
-/* FatFS : A FAT file system library written in C.
+/* libfat : A FAT file system library written in C.
  *
  * Copyright (C) 2018 Taylor Holberton
  *
@@ -18,19 +18,19 @@
 
 #include "fdisk.h"
 
-#include <fatfs/types.h>
+#include <fat/types.h>
 
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-struct fatfs_disk_data
+struct fat_disk_data
 {
 	FILE *file;
 };
 
 static void
-free_disk_data(struct fatfs_disk_data *disk_data)
+free_disk_data(struct fat_disk_data *disk_data)
 {
 	if (disk_data->file != NULL)
 	{
@@ -39,19 +39,19 @@ free_disk_data(struct fatfs_disk_data *disk_data)
 	}
 }
 
-static fatfs_bool
-fdisk_is_open(const struct fatfs_disk_data *disk_data)
+static fat_bool
+fdisk_is_open(const struct fat_disk_data *disk_data)
 {
 	if ((disk_data == NULL)
 	 || (disk_data->file == NULL)) {
-		return FATFS_FALSE;
+		return FAT_FALSE;
 	}
 
-	return FATFS_TRUE;
+	return FAT_TRUE;
 }
 
 static DSTATUS
-fdisk_status(struct fatfs_disk_data *disk_data)
+fdisk_status(struct fat_disk_data *disk_data)
 {
 	if (!fdisk_is_open(disk_data))
 	{
@@ -62,7 +62,7 @@ fdisk_status(struct fatfs_disk_data *disk_data)
 }
 
 static DSTATUS
-fdisk_initialize(struct fatfs_disk_data *disk_data)
+fdisk_initialize(struct fat_disk_data *disk_data)
 {
 	if (!fdisk_is_open(disk_data))
 	{
@@ -78,8 +78,8 @@ fdisk_initialize(struct fatfs_disk_data *disk_data)
 }
 
 static DRESULT
-fdisk_read(struct fatfs_disk_data *disk_data,
-           struct fatfs_read_operation *read_operation)
+fdisk_read(struct fat_disk_data *disk_data,
+           struct fat_read_operation *read_operation)
 {
 	if (!fdisk_is_open(disk_data))
 	{
@@ -101,8 +101,8 @@ fdisk_read(struct fatfs_disk_data *disk_data,
 }
 
 static DRESULT
-fdisk_write(struct fatfs_disk_data *disk_data,
-            struct fatfs_write_operation *write_operation)
+fdisk_write(struct fat_disk_data *disk_data,
+            struct fat_write_operation *write_operation)
 {
 	if (!fdisk_is_open(disk_data))
 	{
@@ -124,7 +124,7 @@ fdisk_write(struct fatfs_disk_data *disk_data,
 }
 
 static DRESULT
-fdisk_get_sector_count(struct fatfs_disk_data *disk_data,
+fdisk_get_sector_count(struct fat_disk_data *disk_data,
                        DWORD *sector_count)
 {
 	if (fseek(disk_data->file, 0L, SEEK_END) != 0)
@@ -171,7 +171,7 @@ fdisk_get_block_size(DWORD *block_size)
 }
 
 static DRESULT
-fdisk_ioctl(struct fatfs_disk_data *disk_data,
+fdisk_ioctl(struct fat_disk_data *disk_data,
             BYTE cmd,
             void *buffer)
 {
@@ -196,7 +196,7 @@ fdisk_ioctl(struct fatfs_disk_data *disk_data,
 void
 ffutil_fdisk_init(struct ffutil_fdisk *fdisk)
 {
-	fatfs_disk_init(&fdisk->disk);
+	fat_disk_init(&fdisk->disk);
 	fdisk->disk.funcs.status = fdisk_status;
 	fdisk->disk.funcs.initialize = fdisk_initialize;
 	fdisk->disk.funcs.read = fdisk_read;
@@ -222,7 +222,7 @@ ffutil_fdisk_open(struct ffutil_fdisk *fdisk,
 {
 	if (fdisk->disk.data == NULL)
 	{
-		fdisk->disk.data = malloc(sizeof(struct fatfs_disk_data));
+		fdisk->disk.data = malloc(sizeof(struct fat_disk_data));
 		if (fdisk->disk.data == NULL)
 		{
 			return -errno;

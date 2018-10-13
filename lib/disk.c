@@ -7,7 +7,7 @@
 /* storage control modules to the FatFs module with a defined API.       */
 /*-----------------------------------------------------------------------*/
 
-#include <fatfs/disk.h>
+#include <fat/disk.h>
 
 #include <stdio.h>
 
@@ -16,7 +16,7 @@
 #endif /* NULL */
 
 void
-fatfs_disk_init(struct fatfs_disk *disk)
+fat_disk_init(struct fat_disk *disk)
 {
 	disk->data = NULL;
 	disk->funcs.status = NULL;
@@ -29,7 +29,7 @@ fatfs_disk_init(struct fatfs_disk *disk)
 FILE *disk_file = NULL;
 
 DSTATUS
-disk_status(struct fatfs_disk *disk)
+disk_status(struct fat_disk *disk)
 {
 	if (disk->funcs.status == NULL)
 	{
@@ -40,7 +40,7 @@ disk_status(struct fatfs_disk *disk)
 }
 
 DSTATUS
-disk_initialize(struct fatfs_disk *disk)
+disk_initialize(struct fat_disk *disk)
 {
 	if (disk->funcs.initialize == NULL)
 	{
@@ -51,7 +51,7 @@ disk_initialize(struct fatfs_disk *disk)
 }
 
 DRESULT
-disk_read(struct fatfs_disk *disk,
+disk_read(struct fat_disk *disk,
           BYTE *buff,
           DWORD sector,
           UINT count)
@@ -61,7 +61,7 @@ disk_read(struct fatfs_disk *disk,
 		return RES_ERROR;
 	}
 
-	struct fatfs_read_operation read_operation;
+	struct fat_read_operation read_operation;
 	read_operation.buffer = buff;
 	read_operation.sector = sector;
 	read_operation.count = count;
@@ -70,7 +70,7 @@ disk_read(struct fatfs_disk *disk,
 }
 
 DRESULT
-disk_write(struct fatfs_disk *disk,
+disk_write(struct fat_disk *disk,
            const BYTE *buff,
            DWORD sector,
            UINT count)
@@ -80,7 +80,7 @@ disk_write(struct fatfs_disk *disk,
 		return RES_ERROR;
 	}
 
-	struct fatfs_write_operation write_operation;
+	struct fat_write_operation write_operation;
 	write_operation.buffer = buff;
 	write_operation.sector = sector;
 	write_operation.count = count;
@@ -89,7 +89,7 @@ disk_write(struct fatfs_disk *disk,
 }
 
 DRESULT
-disk_ioctl(struct fatfs_disk *disk,
+disk_ioctl(struct fat_disk *disk,
            BYTE cmd,
            void *buff)
 {

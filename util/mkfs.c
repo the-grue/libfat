@@ -1,4 +1,4 @@
-/* FatFS : A FAT file system library written in C.
+/* libfat : A FAT file system library written in C.
  *
  * Copyright (C) 2018 Taylor Holberton
  *
@@ -22,9 +22,9 @@
 #include "common-opts.h"
 #include "fdisk.h"
 
-#include <fatfs.h>
-#include <fatfs/disk.h>
-#include <fatfs/types.h>
+#include <fat/fat.h>
+#include <fat/disk.h>
+#include <fat/types.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,22 +43,22 @@ mkfs_opts_init(struct mkfs_opts *opts)
 	opts->cluster_size = 512;
 }
 
-static fatfs_bool
+static fat_bool
 is_nonopt(const struct arg_iterator *iterator)
 {
 	if (arg_iterator_at_end(iterator))
 	{
-		return FATFS_FALSE;
+		return FAT_FALSE;
 	}
 
 	const char *nonopt = arg_iterator_get_current(iterator);
 
 	if (nonopt[0] == '-')
 	{
-		return FATFS_FALSE;
+		return FAT_FALSE;
 	}
 
-	return FATFS_TRUE;
+	return FAT_TRUE;
 }
 
 static int
@@ -219,7 +219,7 @@ mkfs_opts_parse(struct mkfs_opts *opts,
 }
 
 static const char *
-fatfs_strerror(FRESULT fresult)
+fat_strerror(FRESULT fresult)
 {
 	switch (fresult)
 	{
@@ -314,15 +314,15 @@ ffutil_mkfs(const struct common_opts *common_opts,
 		return EXIT_FAILURE;
 	}
 
-	FATFS FatFs;
+	struct fat_fs fs;
 
-	FatFs.disk = &fdisk.disk;
+	fs.disk = &fdisk.disk;
 
 	/* Create an FAT volume */
-	FRESULT result = f_mount(&FatFs, "", 0);
+	FRESULT result = f_mount(&fs, "", 0);
 	if (result != FR_OK)
 	{
-		fprintf(stderr, "Failed to mount FAT volume: %s\n", fatfs_strerror(result));
+		fprintf(stderr, "Failed to mount FAT volume: %s\n", fat_strerror(result));
 		free(working_buffer);
 		ffutil_fdisk_done(&fdisk);
 		return EXIT_FAILURE;
@@ -330,7 +330,7 @@ ffutil_mkfs(const struct common_opts *common_opts,
 
 	result = f_mkfs(&fdisk.disk, "", FM_FAT32, mkfs_opts.cluster_size, working_buffer, working_buffer_size);
 	if (result != FR_OK) {
-		fprintf(stderr, "Failed to create FAT volume: %s.\n", fatfs_strerror(result));
+		fprintf(stderr, "Failed to create FAT volume: %s.\n", fat_strerror(result));
 		free(working_buffer);
 		ffutil_fdisk_done(&fdisk);
 		return EXIT_FAILURE;

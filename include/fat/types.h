@@ -1,4 +1,4 @@
-/* FatFS : A FAT file system library written in C.
+/* libfat : A FAT file system library written in C.
  *
  * Copyright (C) 2018 Taylor Holberton
  *
@@ -16,26 +16,47 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef FATFS_TYPES_H
-#define FATFS_TYPES_H
+/** @file types.h
+ * @brief Contains the type definitions
+ * used throughout the project.
+ * */
+
+#ifndef FAT_TYPES_H
+#define FAT_TYPES_H
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif /* __cplusplus */
 
-typedef unsigned char fatfs_bool;
+/** A boolean type.
+ * Use the @ref FAT_FALSE
+ * and @ref FAT_TRUE values
+ * when assigning values to variables
+ * of this type.
+ * */
 
-#ifndef FATFS_FALSE
-#define FATFS_FALSE 0
-#endif /* FATFS_FALSE */
+typedef unsigned char fat_bool;
 
-#ifndef FATFS_TRUE
-#define FATFS_TRUE 1
-#endif /* FATFS_TRUE */
+/** The "false" value used by
+ * boolean types.
+ * */
+
+#define FAT_FALSE 0
+
+/** The "true" value used by
+ * boolean types.
+ * */
+
+#define FAT_TRUE 1
+
+/** An unsigned, 8-bit integer type.
+ * */
+
+typedef unsigned char fat_uint8;
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif /* __cplusplus */
 
-#endif /* FATFS_TYPES_H */
+#endif /* FAT_TYPES_H */

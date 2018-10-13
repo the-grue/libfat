@@ -1,4 +1,4 @@
-/* FatFS : A FAT file system library written in C.
+/* libfat : A FAT file system library written in C.
  *
  * Copyright (C) 2018 Taylor Holberton
  *
@@ -16,14 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef FATFS_DISK_H
-#define FATFS_DISK_H
+#ifndef FAT_DISK_H
+#define FAT_DISK_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <fatfs/integer.h>
+#include <fat/integer.h>
 
 /** Enumerates the several possible
  * disk status codes.
@@ -58,12 +58,12 @@ typedef enum {
 	RES_PARERR
 } DRESULT;
 
-struct fatfs_disk_data;
+struct fat_disk_data;
 
 /** Encapsulates a read operation.
  * */
 
-struct fatfs_read_operation {
+struct fat_read_operation {
 	/** The buffer to put the data into. */
 	void *buffer;
 	/** The index of the sector to start
@@ -76,7 +76,7 @@ struct fatfs_read_operation {
 /** Encapsulates a disk operation.
  * */
 
-struct fatfs_write_operation {
+struct fat_write_operation {
 	/** The buffer to write the data from. */
 	const void *buffer;
 	/** The sector to start writing the data at. */
@@ -89,19 +89,19 @@ struct fatfs_write_operation {
  * the disk interface.
  * */
 
-struct fatfs_disk_funcs {
+struct fat_disk_funcs {
 	/** Gets the status of the disk. */
-	DSTATUS (*status)(struct fatfs_disk_data *data);
+	DSTATUS (*status)(struct fat_disk_data *data);
 	/** Initializes the disk. */
-	DSTATUS (*initialize)(struct fatfs_disk_data *data);
+	DSTATUS (*initialize)(struct fat_disk_data *data);
 	/** Reads from the disk. */
-	DRESULT (*read)(struct fatfs_disk_data *data,
-	                struct fatfs_read_operation *read_operation);
+	DRESULT (*read)(struct fat_disk_data *data,
+	                struct fat_read_operation *read_operation);
 	/** Writes to the disk. */
-	DRESULT (*write)(struct fatfs_disk_data *data,
-	                 struct fatfs_write_operation *write_operation);
+	DRESULT (*write)(struct fat_disk_data *data,
+	                 struct fat_write_operation *write_operation);
 	/** Mimics an ioctl function for the disk. */
-	DRESULT (*ioctl)(struct fatfs_disk_data *data,
+	DRESULT (*ioctl)(struct fat_disk_data *data,
 	                 BYTE cmd,
 	                 void *buffer);
 };
@@ -109,12 +109,12 @@ struct fatfs_disk_funcs {
 /** Contains a disk instance.
  * */
 
-struct fatfs_disk {
+struct fat_disk {
 	/** The disk implementation data. */
-	struct fatfs_disk_data *data;
+	struct fat_disk_data *data;
 	/** The functions defined
 	 * by the disk. */
-	struct fatfs_disk_funcs funcs;
+	struct fat_disk_funcs funcs;
 };
 
 /** Initializes a disk structure.
@@ -122,7 +122,7 @@ struct fatfs_disk {
  * */
 
 void
-fatfs_disk_init(struct fatfs_disk *disk);
+fat_disk_init(struct fat_disk *disk);
 
 /** Initializes a disk for reading and writing.
  * @returns See @ref DSTATUS for a list
@@ -130,7 +130,7 @@ fatfs_disk_init(struct fatfs_disk *disk);
  * */
 
 DSTATUS
-disk_initialize(struct fatfs_disk *disk);
+disk_initialize(struct fat_disk *disk);
 
 /** Queries the status of a disk.
  * @returns See @ref DSTATUS for a list
@@ -138,7 +138,7 @@ disk_initialize(struct fatfs_disk *disk);
  * */
 
 DSTATUS
-disk_status(struct fatfs_disk *disk);
+disk_status(struct fat_disk *disk);
 
 /** Reads data from a disk.
  * @param buff The buffer to put the data into.
@@ -150,7 +150,7 @@ disk_status(struct fatfs_disk *disk);
  * */
 
 DRESULT
-disk_read(struct fatfs_disk *disk,
+disk_read(struct fat_disk *disk,
           BYTE* buff,
           DWORD sector,
           UINT count);
@@ -165,7 +165,7 @@ disk_read(struct fatfs_disk *disk,
  * */
 
 DRESULT
-disk_write(struct fatfs_disk *disk,
+disk_write(struct fat_disk *disk,
            const BYTE* buff,
            DWORD sector,
            UINT count);
@@ -179,7 +179,7 @@ disk_write(struct fatfs_disk *disk,
  * */
 
 DRESULT
-disk_ioctl(struct fatfs_disk *disk,
+disk_ioctl(struct fat_disk *disk,
            BYTE cmd,
            void *buffer);
 
@@ -217,4 +217,4 @@ disk_ioctl(struct fatfs_disk *disk,
 }
 #endif
 
-#endif /* FATFS_DISK_H */
+#endif /* FAT_DISK_H */

@@ -12,12 +12,12 @@ add_executable("ffutil"
 	"mkdir.c"
 	"time.c")
 
-target_link_libraries("ffutil" "fatfs")
+target_link_libraries("ffutil" "fat")
 
 set_target_properties("ffutil"
 	PROPERTIES
 	RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 
-if (DEFINED FatFS_CFLAGS)
-	target_compile_options("ffutil" PRIVATE ${FatFS_CFLAGS})
-endif (DEFINED FatFS_CFLAGS)
+if (DEFINED libfat_CFLAGS)
+	target_compile_options("ffutil" PRIVATE ${libfat_CFLAGS})
+endif (DEFINED libfat_CFLAGS)

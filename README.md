@@ -1,5 +1,5 @@
-FatFS
-=====
+libfat
+======
 
 This is a FAT file system library written in C.
 

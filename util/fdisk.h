@@ -1,4 +1,4 @@
-/* FatFS : A FAT file system library written in C.
+/* libfat : A FAT file system library written in C.
  *
  * Copyright (C) 2018 Taylor Holberton
  *
@@ -16,10 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef FATFS_UTIL_FDISK_H
-#define FATFS_UTIL_FDISK_H
+#ifndef FAT_UTIL_FDISK_H
+#define FAT_UTIL_FDISK_H
 
-#include <fatfs/disk.h>
+#include <fat/disk.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -28,7 +28,7 @@ extern "C"
 
 struct ffutil_fdisk
 {
-	struct fatfs_disk disk;
+	struct fat_disk disk;
 };
 
 void
@@ -50,4 +50,4 @@ ffutil_fdisk_resize(struct ffutil_fdisk *fdisk,
 /* extern "C" */
 #endif /* __cplusplus */
 
-#endif /* FATFS_UTIL_FDISK_H */
+#endif /* FAT_UTIL_FDISK_H */

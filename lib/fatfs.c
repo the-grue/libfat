@@ -18,20 +18,15 @@
 /
 /----------------------------------------------------------------------------*/
 
-#include <fatfs.h>
+#include <fat/fat.h>
 
-#include <fatfs/disk.h>
+#include <fat/disk.h>
 
 /*--------------------------------------------------------------------------
 
    Module Private Definitions
 
 ---------------------------------------------------------------------------*/
-
-#if FF_DEFINED != 63463	/* Revision ID */
-#error Wrong include file (ff.h).
-#endif
-
 
 /* Character code support macros */
 #define IsUpper(c)		((c) >= 'A' && (c) <= 'Z')
@@ -5501,7 +5496,7 @@ FRESULT f_forward (
 /*-----------------------------------------------------------------------*/
 
 FRESULT
-f_mkfs (struct fatfs_disk *disk,
+f_mkfs (struct fat_disk *disk,
 	const TCHAR* path,
 	/* Format option */
 	BYTE opt,

@@ -1,4 +1,4 @@
-/* FatFS : A FAT file system library written in C.
+/* libfat : A FAT file system library written in C.
  *
  * Copyright (C) 2018 Taylor Holberton
  *
@@ -22,9 +22,9 @@
 #include "common-opts.h"
 #include "fdisk.h"
 
-#include <fatfs.h>
-#include <fatfs/disk.h>
-#include <fatfs/types.h>
+#include <fat/fat.h>
+#include <fat/disk.h>
+#include <fat/types.h>
 
 #include <stdio.h>
 #include <stdlib.h>

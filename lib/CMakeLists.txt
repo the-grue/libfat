@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 3.0)
 
-add_library("fatfs"
+add_library("fat"
 	"disk.c"
 	"fatfs.c"
 	"ffsystem.c"
 	"ffunicode.c")
 
-target_include_directories("fatfs"
+target_include_directories("fat"
 	PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 	       $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
 
-if (DEFINED FatFS_CFLAGS)
-	target_compile_options("fatfs" PRIVATE ${FatFS_CFLAGS})
-endif (DEFINED FatFS_CFLAGS)
+if (DEFINED libfat_CFLAGS)
+	target_compile_options("fat" PRIVATE ${libfat_CFLAGS})
+endif (DEFINED libfat_CFLAGS)

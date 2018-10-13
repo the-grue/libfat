@@ -1,4 +1,4 @@
-/* FatFS : A FAT file system library written in C.
+/* libfat : A FAT file system library written in C.
  *
  * Copyright (C) 2018 Taylor Holberton
  *
@@ -19,7 +19,7 @@
 #ifndef FATFS_UTIL_ARG_ITERATOR_H
 #define FATFS_UTIL_ARG_ITERATOR_H
 
-#include <fatfs/types.h>
+#include <fat/types.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -46,7 +46,7 @@ arg_iterator_init(struct arg_iterator *iterator,
                   int argc,
                   const char **argv);
 
-fatfs_bool
+fat_bool
 arg_iterator_at_end(const struct arg_iterator *iterator);
 
 void

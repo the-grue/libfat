@@ -1,4 +1,4 @@
-/* FatFS : A FAT file system library written in C.
+/* libfat : A FAT file system library written in C.
  *
  * Copyright (C) 2018 Taylor Holberton
  *
@@ -28,14 +28,14 @@ arg_iterator_init(struct arg_iterator *iterator,
 	iterator->pos = 0;
 }
 
-fatfs_bool
+fat_bool
 arg_iterator_at_end(const struct arg_iterator *iterator)
 {
 	if (iterator->pos >= iterator->argc) {
-		return FATFS_TRUE;
+		return FAT_TRUE;
 	}
 
-	return FATFS_FALSE;
+	return FAT_FALSE;
 }
 
 const char *
