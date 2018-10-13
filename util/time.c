@@ -18,6 +18,6 @@
 
 #include <fat/time.h>
 
-fat_uint32 fat_get_time(void) {
+fat_uint_least32 fat_get_time(void) {
 	return 0;
 }

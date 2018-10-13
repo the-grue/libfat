@@ -26,7 +26,7 @@ extern "C"
 {
 #endif /* __cplusplus */
 
-fat_uint32 fat_get_time(void);
+fat_uint_least32 fat_get_time(void);
 
 #ifdef __cplusplus
 } /* extern "C" */

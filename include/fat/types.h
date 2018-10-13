@@ -55,10 +55,23 @@ typedef unsigned char fat_bool;
 
 typedef unsigned char fat_uint8;
 
-/** An unsigned, 32-bit integer type.
+/** An unsigned, 16-bit or
+ * greater integer type.
  * */
 
-typedef unsigned int fat_uint32;
+typedef unsigned long long int fat_uint_least16;
+
+/** An unsigned, 32-bit or
+ * greater integer type.
+ * */
+
+typedef unsigned long int fat_uint_least32;
+
+/** An unsigned, 64-bit or
+ * greater integer type.
+ * */
+
+typedef unsigned long long int fat_uint_least64;
 
 #ifdef __cplusplus
 } /* extern "C" */
