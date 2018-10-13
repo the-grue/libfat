@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.0)
 
 add_library("fat"
+	"decode.h"
+	"decode.c"
 	"disk.c"
+	"encode.h"
+	"encode.c"
 	"string.h"
 	"string.c"
 	"fatfs.c"
