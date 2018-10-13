@@ -118,7 +118,7 @@ typedef struct fat_dir DIR;
 
 /* File information structure (FILINFO) */
 
-typedef struct {
+typedef struct fat_file_info {
 	FSIZE_t	fsize;			/* File size */
 	WORD	fdate;			/* Modified date */
 	WORD	ftime;			/* Modified time */
