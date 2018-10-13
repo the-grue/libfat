@@ -8,4 +8,9 @@ compiler:
   - gcc
   - clang
 
+addons:
+  apt:
+    packages:
+      - fatcat
+
 script: travis-ci/build.sh
