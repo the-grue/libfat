@@ -26,6 +26,7 @@ extern "C" {
 #endif
 
 #include <fat/config.h>
+#include <fat/dir.h>
 #include <fat/fs.h>
 #include <fat/integer.h>
 
@@ -76,14 +77,6 @@ typedef char TCHAR;
 
 
 
-/* Type of file size variables */
-
-#if FF_FS_EXFAT
-typedef QWORD FSIZE_t;
-#else
-typedef DWORD FSIZE_t;
-#endif
-
 
 
 /* Filesystem object structure (FATFS) */
@@ -93,25 +86,7 @@ typedef struct fat_fs FATFS;
 
 /* Object ID and allocation information (FFOBJID) */
 
-typedef struct {
-	FATFS*	fs;				/* Pointer to the hosting volume of this object */
-	WORD	id;				/* Hosting volume mount ID */
-	BYTE	attr;			/* Object attribute */
-	BYTE	stat;			/* Object chain status (b1-0: =0:not contiguous, =2:contiguous, =3:flagmented in this session, b2:sub-directory stretched) */
-	DWORD	sclust;			/* Object data start cluster (0:no cluster or root directory) */
-	FSIZE_t	objsize;		/* Object size (valid when sclust != 0) */
-#if FF_FS_EXFAT
-	DWORD	n_cont;			/* Size of first fragment - 1 (valid when stat == 3) */
-	DWORD	n_frag;			/* Size of last fragment needs to be written to FAT (valid when not zero) */
-	DWORD	c_scl;			/* Containing directory start cluster (valid when sclust != 0) */
-	DWORD	c_size;			/* b31-b8:Size of containing directory, b7-b0: Chain status (valid when c_scl != 0) */
-	DWORD	c_ofs;			/* Offset in the containing directory (valid when file object and sclust != 0) */
-#endif
-#if FF_FS_LOCK
-	UINT	lockid;			/* File lock ID origin from 1 (index of file semaphore table Files[]) */
-#endif
-} FFOBJID;
-
+typedef struct fat_object_info FFOBJID;
 
 
 /* File object structure (FIL) */
@@ -139,22 +114,7 @@ typedef struct {
 
 /* Directory object structure (DIR) */
 
-typedef struct {
-	FFOBJID	obj;			/* Object identifier */
-	DWORD	dptr;			/* Current read/write offset */
-	DWORD	clust;			/* Current cluster */
-	DWORD	sect;			/* Current sector (0:Read operation has terminated) */
-	BYTE*	dir;			/* Pointer to the directory item in the win[] */
-	BYTE	fn[12];			/* SFN (in/out) {body[8],ext[3],status[1]} */
-#if FF_USE_LFN
-	DWORD	blk_ofs;		/* Offset of current entry block being processed (0xFFFFFFFF:Invalid) */
-#endif
-#if FF_USE_FIND
-	const TCHAR* pat;		/* Pointer to the name matching pattern */
-#endif
-} DIR;
-
-
+typedef struct fat_dir DIR;
 
 /* File information structure (FILINFO) */
 

@@ -31,6 +31,14 @@ typedef unsigned long	DWORD;
 /* This type MUST be 64-bit (Remove this for ANSI C (C89) compatibility) */
 typedef unsigned long long QWORD;
 
+/* Type of file size variables */
+
+#if FF_FS_EXFAT
+typedef QWORD FSIZE_t;
+#else
+typedef DWORD FSIZE_t;
+#endif
+
 #endif
 
 #endif
