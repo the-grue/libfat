@@ -62,12 +62,10 @@ struct fat_fs
 	/* Identifier of sync object */
 	FF_SYNC_t sobj;
 #endif
-#if !FF_FS_READONLY
 	/* Last allocated cluster */
 	fat_uint_least32 last_clst;
 	/* Number of free clusters */
 	fat_uint_least32 free_clst;
-#endif
 #if FF_FS_RPATH
 	/* Current directory start cluster (0:root) */
 	fat_uint_least32 cdir;
