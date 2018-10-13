@@ -35,7 +35,7 @@ typedef unsigned char fatfs_bool;
 #endif /* FATFS_TRUE */
 
 #ifdef __cplusplus
-/* extern "C" */
+} /* extern "C" */
 #endif /* __cplusplus */
 
 #endif /* FATFS_TYPES_H */
