@@ -26,8 +26,9 @@
 extern "C" {
 #endif
 
-#include <fatfs/integer.h>
 #include <fatfs/config.h>
+#include <fatfs/fs.h>
+#include <fatfs/integer.h>
 
 #if FF_DEFINED != FFCONF_DEF
 #error Wrong configuration file (ffconf.h).
@@ -94,51 +95,7 @@ typedef DWORD FSIZE_t;
 
 /* Filesystem object structure (FATFS) */
 
-typedef struct {
-	BYTE	fs_type;		/* Filesystem type (0:N/A) */
-	BYTE	pdrv;			/* Physical drive number */
-	BYTE	n_fats;			/* Number of FATs (1 or 2) */
-	BYTE	wflag;			/* win[] flag (b0:dirty) */
-	BYTE	fsi_flag;		/* FSINFO flags (b7:disabled, b0:dirty) */
-	WORD	id;				/* Volume mount ID */
-	WORD	n_rootdir;		/* Number of root directory entries (FAT12/16) */
-	WORD	csize;			/* Cluster size [sectors] */
-#if FF_MAX_SS != FF_MIN_SS
-	WORD	ssize;			/* Sector size (512, 1024, 2048 or 4096) */
-#endif
-#if FF_USE_LFN
-	WCHAR*	lfnbuf;			/* LFN working buffer */
-#endif
-#if FF_FS_EXFAT
-	BYTE*	dirbuf;			/* Directory entry block scratchpad buffer for exFAT */
-#endif
-#if FF_FS_REENTRANT
-	FF_SYNC_t	sobj;		/* Identifier of sync object */
-#endif
-#if !FF_FS_READONLY
-	DWORD	last_clst;		/* Last allocated cluster */
-	DWORD	free_clst;		/* Number of free clusters */
-#endif
-#if FF_FS_RPATH
-	DWORD	cdir;			/* Current directory start cluster (0:root) */
-#if FF_FS_EXFAT
-	DWORD	cdc_scl;		/* Containing directory start cluster (invalid when cdir is 0) */
-	DWORD	cdc_size;		/* b31-b8:Size of containing directory, b7-b0: Chain status */
-	DWORD	cdc_ofs;		/* Offset in the containing directory (invalid when cdir is 0) */
-#endif
-#endif
-	DWORD	n_fatent;		/* Number of FAT entries (number of clusters + 2) */
-	DWORD	fsize;			/* Size of an FAT [sectors] */
-	DWORD	volbase;		/* Volume base sector */
-	DWORD	fatbase;		/* FAT base sector */
-	DWORD	dirbase;		/* Root directory base sector/cluster */
-	DWORD	database;		/* Data base sector */
-	DWORD	winsect;		/* Current sector appearing in the win[] */
-	BYTE	win[FF_MAX_SS];	/* Disk access window for Directory, FAT (and file data at tiny cfg) */
-	/** The disk that the file system is contained in. */
-	struct fatfs_disk *disk;
-} FATFS;
-
+typedef struct fat_fs FATFS;
 
 
 /* Object ID and allocation information (FFOBJID) */
