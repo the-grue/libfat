@@ -4,6 +4,8 @@ add_executable("ffutil"
 	"arg-iterator.h"
 	"arg-iterator.c"
 	"main.c"
+	"mkfs.h"
+	"mkfs.c"
 	"time.c")
 
 target_link_libraries("ffutil" "fatfs")

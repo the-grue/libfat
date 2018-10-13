@@ -16,37 +16,221 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <fatfs.h>
-#include <fatfs/disk.h>
+#include <fatfs/types.h>
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-int main (int argc, const char **argv)
+#include "arg-iterator.h"
+#include "common-opts.h"
+#include "mkfs.h"
+
+static fatfs_bool
+at_nonopt(const struct arg_iterator *iterator)
+{
+	const char *arg = arg_iterator_get_current(iterator);
+	if (arg == NULL)
+	{
+		return FATFS_FALSE;
+	}
+
+	if (arg[0] == '-')
+	{
+		return FATFS_FALSE;
+	}
+
+	return FATFS_TRUE;
+}
+
+static int
+invalid_opt(const struct arg_iterator *iterator)
+{
+	const char *opt = arg_iterator_get_current(iterator);
+
+	fprintf(stderr, "Invalid option '%s'.\n", opt);
+
+	return EXIT_FAILURE;
+}
+
+static int
+parse_disk_path(struct common_opts *opts,
+                struct arg_iterator *iterator)
+{
+	const char *key = arg_iterator_get_current(iterator);
+	if (key == NULL)
+	{
+		return 0;
+	}
+
+	if ((strcmp(key, "--disk") != 0)
+	 && (strcmp(key, "-d") != 0))
+	{
+		return 0;
+	}
+
+	arg_iterator_next(iterator);
+
+	if (arg_iterator_at_end(iterator))
+	{
+		fprintf(stderr, "The '%s' option requires a disk path.\n", key);
+		return -1;
+	}
+
+	opts->disk_path = arg_iterator_get_current(iterator);
+
+	arg_iterator_next(iterator);
+
+	return 1;
+}
+
+static void
+init_common_opts(struct common_opts *opts)
+{
+	opts->disk_path = "fat.img";
+}
+
+static void
+print_help(void)
+{
+	fprintf(stderr, "Usage: ffutil [options] <command>\n");
+	fprintf(stderr, "\n");
+	fprintf(stderr, "Options\n");
+	fprintf(stderr, "	-h, --help      : Print this help message.\n");
+	fprintf(stderr, "	-d, --disk PATH : Specify the path of the disk file.\n");
+	fprintf(stderr, "\n");
+	fprintf(stderr, "Commands\n");
+	fprintf(stderr, "	mkfs : Create a new FAT file system.\n");
+}
+
+static int
+parse_help(struct arg_iterator *iterator)
+{
+	const char *opt = arg_iterator_get_current(iterator);
+	if ((strcmp(opt, "-h") != 0)
+	 && (strcmp(opt, "--help") != 0)) {
+		return 0;
+	}
+
+	print_help();
+
+	return -1;
+}
+
+static int
+parse_common_opts(struct common_opts *opts,
+                  struct arg_iterator *iterator)
+{
+	int result = 0;
+
+	while (!arg_iterator_at_end(iterator)) {
+
+		result = parse_disk_path(opts, iterator);
+		if (result < 0)
+		{
+			return EXIT_FAILURE;
+		}
+		else if (result > 0)
+		{
+			continue;
+		}
+
+		result = parse_help(iterator);
+		if (result < 0)
+		{
+			return EXIT_FAILURE;
+		}
+		else if (result > 0)
+		{
+			continue;
+		}
+
+		if (at_nonopt(iterator)) {
+			break;
+		} else {
+			return invalid_opt(iterator);
+		}
+	}
+
+	return EXIT_SUCCESS;
+}
+
+enum ffutil_cmd
+{
+	FFUTIL_CMD_UNKNOWN,
+	FFUTIL_CMD_MKFS
+};
+
+static enum ffutil_cmd
+parse_cmd(struct arg_iterator *iterator)
+{
+	const char *arg = arg_iterator_get_current(iterator);
+	if (arg == NULL) {
+		return FFUTIL_CMD_UNKNOWN;
+	}
+
+	if (strcmp(arg, "mkfs") == 0)
+	{
+		return FFUTIL_CMD_MKFS;
+	}
+
+	return FFUTIL_CMD_UNKNOWN;
+}
+
+static int
+unknown_cmd(const struct arg_iterator *iterator)
+{
+	const char *cmd = arg_iterator_get_current(iterator);
+
+	fprintf(stderr, "Unknown command '%s'.\n", cmd);
+	fprintf(stderr, "\n");
+	fprintf(stderr, "See -h or --help for assistance.\n");
+
+	return EXIT_FAILURE;
+}
+
+static int
+missing_cmd(void)
+{
+	fprintf(stderr, "Missing command.\n");
+	fprintf(stderr, "\n");
+	fprintf(stderr, "See -h or --help for assistance.\n");
+	return EXIT_FAILURE;
+}
+
+int
+main (int argc, const char **argv)
 {
 	(void) argc;
 	(void) argv;
 
-	struct fatfs_disk disk;
+	struct common_opts opts;
+	init_common_opts(&opts);
 
-	size_t working_buffer_size = 32 * 1024;
+	struct arg_iterator arg_iterator;
+	arg_iterator_init(&arg_iterator, argc, argv);
+	arg_iterator_next(&arg_iterator);
 
-	void *working_buffer = malloc(working_buffer_size);
-
-	FATFS FatFs;
-
-	UINT clusterSize = 512;
-
-	/* Create an FAT volume */
-	f_mount(&FatFs, "", 0);
-
-	if (f_mkfs(&disk, "", FM_FAT32, clusterSize, working_buffer, working_buffer_size)) {
-		printf("Failed to create FAT volume. Adjust volume size or cluster size.\n");
-		free(working_buffer);
+	int err = parse_common_opts(&opts, &arg_iterator);
+	if (err != 0) {
 		return EXIT_FAILURE;
 	}
 
-	free(working_buffer);
+	if (arg_iterator_at_end(&arg_iterator))
+	{
+		return missing_cmd();
+	}
+
+	enum ffutil_cmd cmd = parse_cmd(&arg_iterator);
+	switch (cmd)
+	{
+	case FFUTIL_CMD_UNKNOWN:
+		return unknown_cmd(&arg_iterator);
+	case FFUTIL_CMD_MKFS:
+		return ffutil_mkfs(&opts, &arg_iterator);
+	}
+
+	/* unreachable */
 
 	return EXIT_SUCCESS;
 }
