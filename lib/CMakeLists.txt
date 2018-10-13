@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.0)
 
 add_library("fat"
 	"disk.c"
+	"string.h"
+	"string.c"
 	"fatfs.c"
 	"ffsystem.c"
 	"ffunicode.c")
