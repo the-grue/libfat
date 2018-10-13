@@ -24,6 +24,7 @@
 
 #include "arg-iterator.h"
 #include "common-opts.h"
+#include "list.h"
 #include "mkfs.h"
 #include "mkdir.h"
 
@@ -160,6 +161,7 @@ parse_common_opts(struct common_opts *opts,
 enum ffutil_cmd
 {
 	FFUTIL_CMD_UNKNOWN,
+	FFUTIL_CMD_LIST,
 	FFUTIL_CMD_MKFS,
 	FFUTIL_CMD_MKDIR
 };
@@ -179,6 +181,10 @@ parse_cmd(struct arg_iterator *iterator)
 	else if (strcmp(arg, "mkdir") == 0)
 	{
 		return FFUTIL_CMD_MKDIR;
+	}
+	else if (strcmp(arg, "list") == 0)
+	{
+		return FFUTIL_CMD_LIST;
 	}
 
 	return FFUTIL_CMD_UNKNOWN;
@@ -233,6 +239,8 @@ main (int argc, const char **argv)
 	{
 	case FFUTIL_CMD_UNKNOWN:
 		return unknown_cmd(&arg_iterator);
+	case FFUTIL_CMD_LIST:
+		return ffutil_list(&opts, &arg_iterator);
 	case FFUTIL_CMD_MKFS:
 		return ffutil_mkfs(&opts, &arg_iterator);
 	case FFUTIL_CMD_MKDIR:
