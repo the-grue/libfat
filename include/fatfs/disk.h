@@ -1,9 +1,5 @@
-/*-----------------------------------------------------------------------/
-/  Low level disk interface modlue include file   (C)ChaN, 2014          /
-/-----------------------------------------------------------------------*/
-
-#ifndef _DISKIO_DEFINED
-#define _DISKIO_DEFINED
+#ifndef FATFS_DISK_H
+#define FATFS_DISK_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,7 +18,6 @@ typedef enum {
 	RES_NOTRDY,		/* 3: Not Ready */
 	RES_PARERR		/* 4: Invalid Parameter */
 } DRESULT;
-
 
 /*---------------------------------------*/
 /* Prototypes for disk control functions */
@@ -76,4 +71,4 @@ DRESULT disk_ioctl (BYTE pdrv, BYTE cmd, void* buff);
 }
 #endif
 
-#endif
+#endif /* FATFS_DISK_H */

@@ -20,8 +20,7 @@
 
 #include <fatfs.h>
 
-#include "diskio.h"		/* Declarations of device I/O functions */
-
+#include <fatfs/disk.h>
 
 /*--------------------------------------------------------------------------
 
