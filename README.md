@@ -11,3 +11,10 @@ Here it is being refactored for the following:
  - Improving maintainability (smaller files, smaller functions, better variable names)
  - Improving documentation
  - Easing the integration of the library in operating system projects.
+
+License
+=======
+
+The original library is under a BSD-like license.
+
+As per the documentation of the original library, it is now licensed under GPLv3.
