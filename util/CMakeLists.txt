@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.0)
 add_executable("ffutil"
 	"arg-iterator.h"
 	"arg-iterator.c"
+	"fdisk.h"
+	"fdisk.c"
 	"main.c"
 	"mkfs.h"
 	"mkfs.c"

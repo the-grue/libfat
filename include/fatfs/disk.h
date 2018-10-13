@@ -91,15 +91,19 @@ struct fatfs_write_operation {
 
 struct fatfs_disk_funcs {
 	/** Gets the status of the disk. */
-	DRESULT (*status)(struct fatfs_disk_data *data);
+	DSTATUS (*status)(struct fatfs_disk_data *data);
 	/** Initializes the disk. */
-	DRESULT (*initialize)(struct fatfs_disk_data *data);
+	DSTATUS (*initialize)(struct fatfs_disk_data *data);
 	/** Reads from the disk. */
 	DRESULT (*read)(struct fatfs_disk_data *data,
 	                struct fatfs_read_operation *read_operation);
 	/** Writes to the disk. */
 	DRESULT (*write)(struct fatfs_disk_data *data,
 	                 struct fatfs_write_operation *write_operation);
+	/** Mimics an ioctl function for the disk. */
+	DRESULT (*ioctl)(struct fatfs_disk_data *data,
+	                 BYTE cmd,
+	                 void *buffer);
 };
 
 /** Contains a disk instance.
@@ -112,6 +116,13 @@ struct fatfs_disk {
 	 * by the disk. */
 	struct fatfs_disk_funcs funcs;
 };
+
+/** Initializes a disk structure.
+ * @param disk The disk structure to initialize.
+ * */
+
+void
+fatfs_disk_init(struct fatfs_disk *disk);
 
 /** Initializes a disk for reading and writing.
  * @returns See @ref DSTATUS for a list

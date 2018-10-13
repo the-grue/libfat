@@ -5548,8 +5548,16 @@ f_mkfs (struct fatfs_disk *disk,
 #else
 	ss = FF_MAX_SS;
 #endif
-	if ((au != 0 && au < ss) || au > 0x1000000 || (au & (au - 1))) return FR_INVALID_PARAMETER;	/* Check if au is valid */
-	au /= ss;	/* Cluster size in unit of sector */
+	/* Check if au is valid */
+	if ((au != 0 && au < ss)
+	 || (au > 0x1000000)
+	 || (au & (au - 1)))
+	{
+		return FR_INVALID_PARAMETER;
+	}
+
+	/* Cluster size in unit of sector */
+	au /= ss;
 
 	/* Get working buffer */
 #if FF_USE_LFN == 3
