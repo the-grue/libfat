@@ -182,7 +182,9 @@ parse_cmd(struct arg_iterator *iterator)
 	{
 		return FFUTIL_CMD_MKDIR;
 	}
-	else if (strcmp(arg, "list") == 0)
+	else if ((strcmp(arg, "list") == 0)
+	      || (strcmp(arg, "ls") == 0)
+	      || (strcmp(arg, "dir") == 0))
 	{
 		return FFUTIL_CMD_LIST;
 	}
