@@ -8,6 +8,8 @@ add_executable("ffutil"
 	"main.c"
 	"mkfs.h"
 	"mkfs.c"
+	"mkdir.h"
+	"mkdir.c"
 	"time.c")
 
 target_link_libraries("ffutil" "fatfs")

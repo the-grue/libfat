@@ -25,6 +25,7 @@
 #include "arg-iterator.h"
 #include "common-opts.h"
 #include "mkfs.h"
+#include "mkdir.h"
 
 static fatfs_bool
 at_nonopt(const struct arg_iterator *iterator)
@@ -100,7 +101,8 @@ print_help(void)
 	fprintf(stderr, "	-d, --disk PATH : Specify the path of the disk file.\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Commands\n");
-	fprintf(stderr, "	mkfs : Create a new FAT file system.\n");
+	fprintf(stderr, "	mkfs  : Create a new FAT file system.\n");
+	fprintf(stderr, "	mkdir : Create a new directory.\n");
 }
 
 static int
@@ -158,7 +160,8 @@ parse_common_opts(struct common_opts *opts,
 enum ffutil_cmd
 {
 	FFUTIL_CMD_UNKNOWN,
-	FFUTIL_CMD_MKFS
+	FFUTIL_CMD_MKFS,
+	FFUTIL_CMD_MKDIR
 };
 
 static enum ffutil_cmd
@@ -172,6 +175,10 @@ parse_cmd(struct arg_iterator *iterator)
 	if (strcmp(arg, "mkfs") == 0)
 	{
 		return FFUTIL_CMD_MKFS;
+	}
+	else if (strcmp(arg, "mkdir") == 0)
+	{
+		return FFUTIL_CMD_MKDIR;
 	}
 
 	return FFUTIL_CMD_UNKNOWN;
@@ -228,6 +235,8 @@ main (int argc, const char **argv)
 		return unknown_cmd(&arg_iterator);
 	case FFUTIL_CMD_MKFS:
 		return ffutil_mkfs(&opts, &arg_iterator);
+	case FFUTIL_CMD_MKDIR:
+		return ffutil_mkdir(&opts, &arg_iterator);
 	}
 
 	/* unreachable */
