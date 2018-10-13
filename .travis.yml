@@ -1,0 +1,11 @@
+language: c
+
+dist: trusty
+
+sudo: false
+
+compiler:
+  - gcc
+  - clang
+
+script: travis-ci/build.sh
