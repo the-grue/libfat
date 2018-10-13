@@ -86,7 +86,7 @@ fdisk_read(struct fat_disk_data *disk_data,
 		return RES_ERROR;
 	}
 
-	if (fseek(disk_data->file, read_operation->sector, SEEK_SET) != 0)
+	if (fseek(disk_data->file, read_operation->sector * 512, SEEK_SET) != 0)
 	{
 		return RES_ERROR;
 	}
@@ -109,7 +109,7 @@ fdisk_write(struct fat_disk_data *disk_data,
 		return RES_ERROR;
 	}
 
-	if (fseek(disk_data->file, write_operation->sector, SEEK_SET) != 0)
+	if (fseek(disk_data->file, write_operation->sector * 512, SEEK_SET) != 0)
 	{
 		return RES_ERROR;
 	}
@@ -222,12 +222,16 @@ ffutil_fdisk_open(struct ffutil_fdisk *fdisk,
 {
 	if (fdisk->disk.data == NULL)
 	{
+		errno = 0;
+
 		fdisk->disk.data = malloc(sizeof(struct fat_disk_data));
 		if (fdisk->disk.data == NULL)
 		{
 			return -errno;
 		}
 	}
+
+	errno = 0;
 
 	fdisk->disk.data->file = fopen(path, mode);
 	if (fdisk->disk.data->file == NULL)
@@ -247,6 +251,8 @@ ffutil_fdisk_resize(struct ffutil_fdisk *fdisk,
 		return -EINVAL;
 	}
 
+	errno = 0;
+
 	if (fseek(fdisk->disk.data->file, size - 1, SEEK_SET) != 0)
 	{
 		return -errno;
@@ -254,7 +260,20 @@ ffutil_fdisk_resize(struct ffutil_fdisk *fdisk,
 
 	unsigned char null_byte = 0;
 
-	fwrite(&null_byte, 1, 1, fdisk->disk.data->file);
+	errno = 0;
+
+	size_t write_count = fwrite(&null_byte, 1, 1, fdisk->disk.data->file);
+	if (write_count != 1)
+	{
+		if (errno == 0)
+		{
+			return -EIO;
+		}
+		else
+		{
+			return -errno;
+		}
+	}
 
 	return 0;
 }
