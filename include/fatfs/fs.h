@@ -34,8 +34,6 @@ struct fat_fs
 {
 	/* Filesystem type (0:N/A) */
 	BYTE fs_type;
-	/* Physical drive number */
-	BYTE pdrv;
 	/* Number of FATs (1 or 2) */
 	BYTE n_fats;
 	/* win[] flag (b0:dirty) */
