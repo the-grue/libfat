@@ -19,7 +19,9 @@ target_include_directories("fatfs"
 target_compile_options("fatfs" PRIVATE ${FatFS_CFLAGS})
 
 
-add_executable("ffutil" "util/main.c")
+add_executable("ffutil"
+	"util/main.c"
+	"util/time.c")
 
 target_link_libraries("ffutil" "fatfs")
 
