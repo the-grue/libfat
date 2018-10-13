@@ -33,18 +33,18 @@ struct fat_dir {
 	/** Object information */
 	struct fat_object_info obj;
 	/** Current read/write offset */
-	DWORD dptr;
+	fat_uint_least32 dptr;
 	/** Current cluster */
-	DWORD clust;
+	fat_uint_least32 clust;
 	/** Current sector (0:Read operation has terminated) */
-	DWORD sect;
+	fat_uint_least32 sect;
 	/** Pointer to the directory item in the win[] */
-	BYTE* dir;
+	fat_uint8* dir;
 	/** SFN (in/out) {body[8],ext[3],status[1]} */
-	BYTE fn[12];
+	fat_uint8 fn[12];
 #if FF_USE_LFN
 	/** Offset of current entry block being processed (0xFFFFFFFF:Invalid) */
-	DWORD blk_ofs;
+	fat_uint_least32 blk_ofs;
 #endif
 #if FF_USE_FIND
 	/** Pointer to the name matching pattern */

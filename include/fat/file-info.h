@@ -20,25 +20,36 @@
 #define FAT_FILE_INFO_H
 
 #include <fat/tchar.h>
+#include <fat/types.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif /* __cplusplus */
 
+/** Contains information about
+ * a single file.
+ * */
+
 struct fat_file_info {
-	FSIZE_t	fsize;			/* File size */
-	WORD	fdate;			/* Modified date */
-	WORD	ftime;			/* Modified time */
-	BYTE	fattrib;		/* File attribute */
+	/* File size */
+	FSIZE_t fsize;
+	/* Modified date */
+	fat_uint_least16 fdate;
+	/* Modified time */
+	fat_uint_least16 ftime;
+	/* File attribute */
+	fat_uint8 fattrib;
 #if FF_USE_LFN
-	TCHAR	altname[FF_SFN_BUF + 1];/* Altenative file name */
-	TCHAR	fname[FF_LFN_BUF + 1];	/* Primary file name */
+	/* Altenative file name */
+	TCHAR altname[FF_SFN_BUF + 1];
+	/* Primary file name */
+	TCHAR fname[FF_LFN_BUF + 1];
 #else
-	TCHAR	fname[12 + 1];	/* File name */
+	/* File name */
+	TCHAR fname[12 + 1];
 #endif
 };
-
 
 #ifdef __cplusplus
 } /* extern "C" */

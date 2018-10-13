@@ -34,26 +34,28 @@ struct fat_file {
 	/* Object identifier (must be the 1st member to detect invalid object pointer) */
 	struct fat_object_info obj;
 	/* File status flags */
-	BYTE flag;
+	fat_uint8 flag;
 	/* Abort flag (error code) */
-	BYTE err;
+	fat_uint8 err;
 	/* File read/write pointer (Zeroed on file open) */
 	FSIZE_t fptr;
 	/* Current cluster of fpter (invalid when fptr is 0) */
-	DWORD clust;
+	fat_uint_least32 clust;
 	/* Sector number appearing in buf[] (0:invalid) */
-	DWORD sect;
+	fat_uint_least32 sect;
 #if !FF_FS_READONLY
-	DWORD dir_sect; /* Sector number containing the directory entry (not used at exFAT) */
-	BYTE* dir_ptr; /* Pointer to the directory entry in the win[] (not used at exFAT) */
+	/* Sector number containing the directory entry (not used at exFAT) */
+	fat_uint_least32 dir_sect;
+	/* Pointer to the directory entry in the win[] (not used at exFAT) */
+	fat_uint8* dir_ptr;
 #endif
 #if FF_USE_FASTSEEK
 	/* Pointer to the cluster link map table (nulled on open, set by application) */
-	DWORD* cltbl;
+	fat_uint_least32* cltbl;
 #endif
 #if !FF_FS_TINY
 	/* File private data read/write window */
-	BYTE buf[FF_MAX_SS];
+	fat_uint8 buf[FF_MAX_SS];
 #endif
 };
 
