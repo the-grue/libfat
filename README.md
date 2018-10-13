@@ -37,6 +37,14 @@ cmake --build .
 
 When the dust settles on the refactoring work, more build systems (such as GNU Make) will be added.
 
+Credits
+=======
+
+A thanks goes out to ChaN, the library's original author.
+
+In addition, a thanks goes out to [fatcat](https://github.com/Gregwar/fatcat).
+The fatcat project is invaluable for debugging this library and FAT file systems in general.
+
 License
 =======
 
