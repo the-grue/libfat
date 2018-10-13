@@ -27,6 +27,7 @@ extern "C" {
 
 #include <fat/config.h>
 #include <fat/dir.h>
+#include <fat/error.h>
 #include <fat/file.h>
 #include <fat/file-info.h>
 #include <fat/fs.h>
@@ -71,54 +72,9 @@ typedef struct fat_dir DIR;
 
 typedef struct fat_file_info FILINFO;
 
-
-
 /* File function return code (FRESULT) */
 
-typedef enum {
-	/* (0) Succeeded */
-	FR_OK = 0,
-	/* (1) A hard error occurred in the low level disk I/O layer */
-	FR_DISK_ERR,
-	/* (2) Assertion failed */
-	FR_INT_ERR,
-	/* (3) The physical drive cannot work */
-	FR_NOT_READY,
-	/* (4) Could not find the file */
-	FR_NO_FILE,
-	/* (5) Could not find the path */
-	FR_NO_PATH,
-	/* (6) The path name format is invalid */
-	FR_INVALID_NAME,
-	/* (7) Access denied due to prohibited access or directory full */
-	FR_DENIED,
-	/* (8) Access denied due to prohibited access */
-	FR_EXIST,
-	/* (9) The file/directory object is invalid */
-	FR_INVALID_OBJECT,
-	/* (10) The physical drive is write protected */
-	FR_WRITE_PROTECTED,
-	/* (11) The logical drive number is invalid */
-	FR_INVALID_DRIVE,
-	/* (12) The volume has no work area */
-	FR_NOT_ENABLED,
-	/* (13) There is no valid FAT volume */
-	FR_NO_FILESYSTEM,
-	/* (14) The f_mkfs() aborted due to any problem */
-	FR_MKFS_ABORTED,
-	/* (15) Could not get a grant to access the volume within defined period */
-	FR_TIMEOUT,
-	/* (16) The operation is rejected according to the file sharing policy */
-	FR_LOCKED,
-	/* (17) LFN working buffer could not be allocated */
-	FR_NOT_ENOUGH_CORE,
-	/* (18) Number of open files > FF_FS_LOCK */
-	FR_TOO_MANY_OPEN_FILES,
-	/* (19) Given parameter is invalid */
-	FR_INVALID_PARAMETER
-} FRESULT;
-
-
+typedef enum fat_error FRESULT;
 
 /*--------------------------------------------------------------*/
 /* FatFs module application interface                           */
