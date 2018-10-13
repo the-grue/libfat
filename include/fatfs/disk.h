@@ -1,3 +1,21 @@
+/* FatFS : A FAT file system library written in C.
+ *
+ * Copyright (C) 2018 Taylor Holberton
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef FATFS_DISK_H
 #define FATFS_DISK_H
 
@@ -7,35 +25,152 @@ extern "C" {
 
 #include <fatfs/integer.h>
 
-/* Status of Disk Functions */
-typedef BYTE	DSTATUS;
+/** Enumerates the several possible
+ * disk status codes.
+ * */
 
-/* Results of Disk Functions */
 typedef enum {
-	RES_OK = 0,		/* 0: Successful */
-	RES_ERROR,		/* 1: R/W Error */
-	RES_WRPRT,		/* 2: Write Protected */
-	RES_NOTRDY,		/* 3: Not Ready */
-	RES_PARERR		/* 4: Invalid Parameter */
+	/** The drive is in a normal
+	 * working state. */
+	STA_NORMAL = 0x00,
+	/** Drive not initialized */
+	STA_NOINIT = 0x01,
+	/** No medium in the drive */
+	STA_NODISK = 0x02,
+	/** Write protected */
+	STA_PROTECT = 0x04
+} DSTATUS;
+
+/* Enumerates the possible results
+ * of a disk function.
+ * */
+
+typedef enum {
+	/* 0: Successful */
+	RES_OK = 0,
+	/* 1: R/W Error */
+	RES_ERROR,
+	/* 2: Write Protected */
+	RES_WRPRT,
+	/* 3: Not Ready */
+	RES_NOTRDY,
+	/* 4: Invalid Parameter */
+	RES_PARERR
 } DRESULT;
 
-/*---------------------------------------*/
-/* Prototypes for disk control functions */
+struct fatfs_disk_data;
 
+/** Encapsulates a read operation.
+ * */
 
-DSTATUS disk_initialize (BYTE pdrv);
-DSTATUS disk_status (BYTE pdrv);
-DRESULT disk_read (BYTE pdrv, BYTE* buff, DWORD sector, UINT count);
-DRESULT disk_write (BYTE pdrv, const BYTE* buff, DWORD sector, UINT count);
-DRESULT disk_ioctl (BYTE pdrv, BYTE cmd, void* buff);
+struct fatfs_read_operation {
+	/** The buffer to put the data into. */
+	void *buffer;
+	/** The index of the sector to start
+	 * reading from. */
+	DWORD sector;
+	/** The number of sectors to read. */
+	UINT count;
+};
 
+/** Encapsulates a disk operation.
+ * */
 
-/* Disk Status Bits (DSTATUS) */
+struct fatfs_write_operation {
+	/** The buffer to write the data from. */
+	const void *buffer;
+	/** The sector to start writing the data at. */
+	DWORD sector;
+	/** The number of sectors to write. */
+	UINT count;
+};
 
-#define STA_NOINIT		0x01	/* Drive not initialized */
-#define STA_NODISK		0x02	/* No medium in the drive */
-#define STA_PROTECT		0x04	/* Write protected */
+/** Contains the functions that make up
+ * the disk interface.
+ * */
 
+struct fatfs_disk_funcs {
+	/** Gets the status of the disk. */
+	DRESULT (*status)(struct fatfs_disk_data *data);
+	/** Initializes the disk. */
+	DRESULT (*initialize)(struct fatfs_disk_data *data);
+	/** Reads from the disk. */
+	DRESULT (*read)(struct fatfs_disk_data *data,
+	                struct fatfs_read_operation *read_operation);
+	/** Writes to the disk. */
+	DRESULT (*write)(struct fatfs_disk_data *data,
+	                 struct fatfs_write_operation *write_operation);
+};
+
+/** Contains a disk instance.
+ * */
+
+struct fatfs_disk {
+	/** The disk implementation data. */
+	struct fatfs_disk_data *data;
+	/** The functions defined
+	 * by the disk. */
+	struct fatfs_disk_funcs funcs;
+};
+
+/** Initializes a disk for reading and writing.
+ * @returns See @ref DSTATUS for a list
+ * of possible return values.
+ * */
+
+DSTATUS
+disk_initialize(struct fatfs_disk *disk);
+
+/** Queries the status of a disk.
+ * @returns See @ref DSTATUS for a list
+ * of possible return values.
+ * */
+
+DSTATUS
+disk_status(struct fatfs_disk *disk);
+
+/** Reads data from a disk.
+ * @param buff The buffer to put the data into.
+ * @param sector The index of the sector to start
+ * the read operation at.
+ * @param count The number of sectors to read.
+ * @returns See @ref DSTATUS for a list
+ * of possible return values.
+ * */
+
+DRESULT
+disk_read(struct fatfs_disk *disk,
+          BYTE* buff,
+          DWORD sector,
+          UINT count);
+
+/** Writes data to a disk.
+ * @param buff The buffer to get the data from.
+ * @param sector The index of the sector to start
+ * the write operation at.
+ * @param count The number of sectors to write.
+ * @returns See @ref DSTATUS for a list
+ * of possible return values.
+ * */
+
+DRESULT
+disk_write(struct fatfs_disk *disk,
+           const BYTE* buff,
+           DWORD sector,
+           UINT count);
+
+/** Mimics an ioctl call to the disk.
+ * @param disk An initialized disk instance.
+ * @param cmd The ioctl command.
+ * @param buffer The buffer to put the data into.
+ * @returns See @ref DSTATUS for a list
+ * of possible return values.
+ * */
+
+DRESULT
+disk_ioctl(struct fatfs_disk *disk,
+           BYTE cmd,
+           void *buffer);
 
 /* Command code for disk_ioctrl fucntion */
 

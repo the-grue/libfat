@@ -1,5 +1,5 @@
 /*-----------------------------------------------------------------------*/
-/* Low level disk I/O module skeleton for FatFs     (C)ChaN, 2016        */
+/* Low level disk_file I/O module skeleton for FatFs     (C)ChaN, 2016        */
 /*-----------------------------------------------------------------------*/
 /* If a working storage control module is available, it should be        */
 /* attached to the FatFs via a glue function rather than modifying it.   */
@@ -11,14 +11,14 @@
 
 #include <stdio.h>
 
-FILE *disk = NULL;
+FILE *disk_file = NULL;
 
 DSTATUS
-disk_status(BYTE disk_index)
+disk_status(struct fatfs_disk *disk)
 {
-	(void) disk_index;
+	(void) disk;
 
-	if (disk == NULL) {
+	if (disk_file == NULL) {
 		return STA_NOINIT;
 	} else {
 		return 0;
@@ -26,20 +26,20 @@ disk_status(BYTE disk_index)
 }
 
 DSTATUS
-disk_initialize(BYTE disk_index)
+disk_initialize(struct fatfs_disk *disk)
 {
-	(void) disk_index;
+	(void) disk;
 
-	if (disk != NULL)
+	if (disk_file != NULL)
 	{
 		return 0;
 	}
 
-	disk = fopen("fat.img", "rb+");
-	if (disk == NULL)
+	disk_file = fopen("fat.img", "rb+");
+	if (disk_file == NULL)
 	{
-		disk = fopen("fat.img", "wb+");
-		if (disk == NULL) {
+		disk_file = fopen("fat.img", "wb+");
+		if (disk_file == NULL) {
 			return STA_NOINIT;
 		}
 	}
@@ -48,22 +48,22 @@ disk_initialize(BYTE disk_index)
 }
 
 DRESULT
-disk_read(BYTE disk_index,
+disk_read(struct fatfs_disk *disk,
           BYTE *buff,
           DWORD sector,
           UINT count)
 {
-	(void) disk_index;
+	(void) disk;
 
-	if (disk == NULL) {
+	if (disk_file == NULL) {
 		return RES_ERROR;
 	}
 
-	if (fseek(disk, sector * 512, SEEK_SET) != 0) {
+	if (fseek(disk_file, sector * 512, SEEK_SET) != 0) {
 		return RES_ERROR;
 	}
 
-	if (fread(buff, 512, count, disk) != count) {
+	if (fread(buff, 512, count, disk_file) != count) {
 		return RES_ERROR;
 	}
 
@@ -71,22 +71,22 @@ disk_read(BYTE disk_index,
 }
 
 DRESULT
-disk_write(BYTE disk_index,
+disk_write(struct fatfs_disk *disk,
            const BYTE *buff,
            DWORD sector,
            UINT count)
 {
-	(void) disk_index;
+	(void) disk;
 
-	if (disk == NULL) {
+	if (disk_file == NULL) {
 		return RES_ERROR;
 	}
 
-	if (fseek(disk, sector * 512, SEEK_SET) != 0) {
+	if (fseek(disk_file, sector * 512, SEEK_SET) != 0) {
 		return RES_ERROR;
 	}
 
-	if (fwrite(buff, 512, count, disk) != count) {
+	if (fwrite(buff, 512, count, disk_file) != count) {
 		return RES_ERROR;
 	}
 
@@ -96,15 +96,15 @@ disk_write(BYTE disk_index,
 static DRESULT
 get_sector_count(DWORD *sector_count)
 {
-	if (disk == NULL) {
+	if (disk_file == NULL) {
 		return RES_ERROR;
 	}
 
-	if (fseek(disk, 0L, SEEK_END) != 0) {
+	if (fseek(disk_file, 0L, SEEK_END) != 0) {
 		return RES_ERROR;
 	}
 
-	long size = ftell(disk);
+	long size = ftell(disk_file);
 	if (size == -1L) {
 		return RES_ERROR;
 	}
@@ -123,11 +123,11 @@ get_block_size(DWORD *block_size)
 }
 
 DRESULT
-disk_ioctl(BYTE disk_index,
+disk_ioctl(struct fatfs_disk *disk,
            BYTE cmd,
            void *buff)
 {
-	(void) disk_index;
+	(void) disk;
 
 	switch (cmd) {
 	case CTRL_SYNC:

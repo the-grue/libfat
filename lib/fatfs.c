@@ -1036,10 +1036,10 @@ static FRESULT sync_window (	/* Returns FR_OK or FR_DISK_ERR */
 
 
 	if (fs->wflag) {	/* Is the disk access window dirty */
-		if (disk_write(fs->pdrv, fs->win, fs->winsect, 1) == RES_OK) {	/* Write back the window */
+		if (disk_write(fs->disk, fs->win, fs->winsect, 1) == RES_OK) {	/* Write back the window */
 			fs->wflag = 0;	/* Clear window dirty flag */
 			if (fs->winsect - fs->fatbase < fs->fsize) {	/* Is it in the 1st FAT? */
-				if (fs->n_fats == 2) disk_write(fs->pdrv, fs->win, fs->winsect + fs->fsize, 1);	/* Reflect it to 2nd FAT if needed */
+				if (fs->n_fats == 2) disk_write(fs->disk, fs->win, fs->winsect + fs->fsize, 1);	/* Reflect it to 2nd FAT if needed */
 			}
 		} else {
 			res = FR_DISK_ERR;
@@ -1063,7 +1063,7 @@ static FRESULT move_window (	/* Returns FR_OK or FR_DISK_ERR */
 		res = sync_window(fs);		/* Write-back changes */
 #endif
 		if (res == FR_OK) {			/* Fill sector window with new data */
-			if (disk_read(fs->pdrv, fs->win, sector, 1) != RES_OK) {
+			if (disk_read(fs->disk, fs->win, sector, 1) != RES_OK) {
 				sector = 0xFFFFFFFF;	/* Invalidate window if read data is not valid */
 				res = FR_DISK_ERR;
 			}
@@ -1100,11 +1100,11 @@ static FRESULT sync_fs (	/* Returns FR_OK or FR_DISK_ERR */
 			st_dword(fs->win + FSI_Nxt_Free, fs->last_clst);
 			/* Write it into the FSInfo sector */
 			fs->winsect = fs->volbase + 1;
-			disk_write(fs->pdrv, fs->win, fs->winsect, 1);
+			disk_write(fs->disk, fs->win, fs->winsect, 1);
 			fs->fsi_flag = 0;
 		}
 		/* Make sure that no pending write process in the lower layer */
-		if (disk_ioctl(fs->pdrv, CTRL_SYNC, 0) != RES_OK) res = FR_DISK_ERR;
+		if (disk_ioctl(fs->disk, CTRL_SYNC, 0) != RES_OK) res = FR_DISK_ERR;
 	}
 
 	return res;
@@ -1656,7 +1656,7 @@ static FRESULT dir_clear (	/* Returns FR_OK or FR_DISK_ERR */
 #endif
 	{
 		ibuf = fs->win; szb = 1;	/* Use window buffer (many single-sector writes may take a time) */
-		for (n = 0; n < fs->csize && disk_write(fs->pdrv, ibuf, sect + n, szb) == RES_OK; n += szb) ;	/* Fill the cluster with 0 */
+		for (n = 0; n < fs->csize && disk_write(fs->disk, ibuf, sect + n, szb) == RES_OK; n += szb) ;	/* Fill the cluster with 0 */
 	}
 	return (n == fs->csize) ? FR_OK : FR_DISK_ERR;
 }
@@ -3227,7 +3227,7 @@ static FRESULT find_volume (	/* FR_OK(0): successful, !=0: an error occurred */
 
 	mode &= (BYTE)~FA_READ;				/* Desired access mode, write access or not */
 	if (fs->fs_type != 0) {				/* If the volume has been mounted */
-		stat = disk_status(fs->pdrv);
+		stat = disk_status(fs->disk);
 		if (!(stat & STA_NOINIT)) {		/* and the physical drive is kept initialized */
 			if (!FF_FS_READONLY && mode && (stat & STA_PROTECT)) {	/* Check write protection if needed */
 				return FR_WRITE_PROTECTED;
@@ -3241,7 +3241,7 @@ static FRESULT find_volume (	/* FR_OK(0): successful, !=0: an error occurred */
 
 	fs->fs_type = 0;					/* Clear the filesystem object */
 	fs->pdrv = LD2PD(vol);				/* Bind the logical drive and a physical drive */
-	stat = disk_initialize(fs->pdrv);	/* Initialize the physical drive */
+	stat = disk_initialize(fs->disk);	/* Initialize the physical drive */
 	if (stat & STA_NOINIT) { 			/* Check if the initialization succeeded */
 		return FR_NOT_READY;			/* Failed to initialize due to no medium or hard error */
 	}
@@ -3442,7 +3442,7 @@ static FRESULT validate (	/* Returns FR_OK or FR_INVALID_OBJECT */
 			res = FR_TIMEOUT;
 		}
 #else
-		if (!(disk_status(obj->fs->pdrv) & STA_NOINIT)) { /* Test if the phsical drive is kept initialized */
+		if (!(disk_status(obj->fs->disk) & STA_NOINIT)) { /* Test if the phsical drive is kept initialized */
 			res = FR_OK;
 		}
 #endif
@@ -3681,7 +3681,7 @@ FRESULT f_open (
 					} else {
 						fp->sect = sc + (DWORD)(ofs / SS(fs));
 #if !FF_FS_TINY
-						if (disk_read(fs->pdrv, fp->buf, fp->sect, 1) != RES_OK) res = FR_DISK_ERR;
+						if (disk_read(fs->disk, fp->buf, fp->sect, 1) != RES_OK) res = FR_DISK_ERR;
 #endif
 					}
 				}
@@ -3755,7 +3755,7 @@ FRESULT f_read (
 				if (csect + cc > fs->csize) {	/* Clip at cluster boundary */
 					cc = fs->csize - csect;
 				}
-				if (disk_read(fs->pdrv, rbuff, sect, cc) != RES_OK) ABORT(fs, FR_DISK_ERR);
+				if (disk_read(fs->disk, rbuff, sect, cc) != RES_OK) ABORT(fs, FR_DISK_ERR);
 #if !FF_FS_READONLY && FF_FS_MINIMIZE <= 2		/* Replace one of the read sectors with cached data if it contains a dirty sector */
 #if FF_FS_TINY
 				if (fs->wflag && fs->winsect - sect < cc) {
@@ -3774,11 +3774,11 @@ FRESULT f_read (
 			if (fp->sect != sect) {			/* Load data sector if not in cache */
 #if !FF_FS_READONLY
 				if (fp->flag & FA_DIRTY) {		/* Write-back dirty sector cache */
-					if (disk_write(fs->pdrv, fp->buf, fp->sect, 1) != RES_OK) ABORT(fs, FR_DISK_ERR);
+					if (disk_write(fs->disk, fp->buf, fp->sect, 1) != RES_OK) ABORT(fs, FR_DISK_ERR);
 					fp->flag &= (BYTE)~FA_DIRTY;
 				}
 #endif
-				if (disk_read(fs->pdrv, fp->buf, sect, 1) != RES_OK)	ABORT(fs, FR_DISK_ERR);	/* Fill sector cache */
+				if (disk_read(fs->disk, fp->buf, sect, 1) != RES_OK)	ABORT(fs, FR_DISK_ERR);	/* Fill sector cache */
 			}
 #endif
 			fp->sect = sect;
@@ -3858,7 +3858,7 @@ FRESULT f_write (
 			if (fs->winsect == fp->sect && sync_window(fs) != FR_OK) ABORT(fs, FR_DISK_ERR);	/* Write-back sector cache */
 #else
 			if (fp->flag & FA_DIRTY) {		/* Write-back sector cache */
-				if (disk_write(fs->pdrv, fp->buf, fp->sect, 1) != RES_OK) ABORT(fs, FR_DISK_ERR);
+				if (disk_write(fs->disk, fp->buf, fp->sect, 1) != RES_OK) ABORT(fs, FR_DISK_ERR);
 				fp->flag &= (BYTE)~FA_DIRTY;
 			}
 #endif
@@ -3870,7 +3870,7 @@ FRESULT f_write (
 				if (csect + cc > fs->csize) {	/* Clip at cluster boundary */
 					cc = fs->csize - csect;
 				}
-				if (disk_write(fs->pdrv, wbuff, sect, cc) != RES_OK) ABORT(fs, FR_DISK_ERR);
+				if (disk_write(fs->disk, wbuff, sect, cc) != RES_OK) ABORT(fs, FR_DISK_ERR);
 #if FF_FS_MINIMIZE <= 2
 #if FF_FS_TINY
 				if (fs->winsect - sect < cc) {	/* Refill sector cache if it gets invalidated by the direct write */
@@ -3895,7 +3895,7 @@ FRESULT f_write (
 #else
 			if (fp->sect != sect && 		/* Fill sector cache with file data */
 				fp->fptr < fp->obj.objsize &&
-				disk_read(fs->pdrv, fp->buf, sect, 1) != RES_OK) {
+				disk_read(fs->disk, fp->buf, sect, 1) != RES_OK) {
 					ABORT(fs, FR_DISK_ERR);
 			}
 #endif
@@ -3940,7 +3940,7 @@ FRESULT f_sync (
 		if (fp->flag & FA_MODIFIED) {	/* Is there any change to the file? */
 #if !FF_FS_TINY
 			if (fp->flag & FA_DIRTY) {	/* Write-back cached data if needed */
-				if (disk_write(fs->pdrv, fp->buf, fp->sect, 1) != RES_OK) LEAVE_FF(fs, FR_DISK_ERR);
+				if (disk_write(fs->disk, fp->buf, fp->sect, 1) != RES_OK) LEAVE_FF(fs, FR_DISK_ERR);
 				fp->flag &= (BYTE)~FA_DIRTY;
 			}
 #endif
@@ -4361,11 +4361,11 @@ FRESULT f_lseek (
 #if !FF_FS_TINY
 #if !FF_FS_READONLY
 			if (fp->flag & FA_DIRTY) {			/* Write-back dirty sector cache */
-				if (disk_write(fs->pdrv, fp->buf, fp->sect, 1) != RES_OK) ABORT(fs, FR_DISK_ERR);
+				if (disk_write(fs->disk, fp->buf, fp->sect, 1) != RES_OK) ABORT(fs, FR_DISK_ERR);
 				fp->flag &= (BYTE)~FA_DIRTY;
 			}
 #endif
-			if (disk_read(fs->pdrv, fp->buf, nsect, 1) != RES_OK) ABORT(fs, FR_DISK_ERR);	/* Fill sector cache */
+			if (disk_read(fs->disk, fp->buf, nsect, 1) != RES_OK) ABORT(fs, FR_DISK_ERR);	/* Fill sector cache */
 #endif
 			fp->sect = nsect;
 		}
@@ -4719,7 +4719,7 @@ FRESULT f_truncate (
 		fp->flag |= FA_MODIFIED;
 #if !FF_FS_TINY
 		if (res == FR_OK && (fp->flag & FA_DIRTY)) {
-			if (disk_write(fs->pdrv, fp->buf, fp->sect, 1) != RES_OK) {
+			if (disk_write(fs->disk, fp->buf, fp->sect, 1) != RES_OK) {
 				res = FR_DISK_ERR;
 			} else {
 				fp->flag &= (BYTE)~FA_DIRTY;
@@ -5501,13 +5501,17 @@ FRESULT f_forward (
 /* Create an FAT/exFAT volume                                            */
 /*-----------------------------------------------------------------------*/
 
-FRESULT f_mkfs (
-	const TCHAR* path,	/* Logical drive number */
-	BYTE opt,			/* Format option */
-	DWORD au,			/* Size of allocation unit (cluster) [byte] */
-	void* work,			/* Pointer to working buffer (null: use heap memory) */
-	UINT len			/* Size of working buffer [byte] */
-)
+FRESULT
+f_mkfs (struct fatfs_disk *disk,
+	const TCHAR* path,
+	/* Format option */
+	BYTE opt,
+	/* Size of allocation unit (cluster) [byte] */
+	DWORD au,
+	/* Pointer to working buffer (null: use heap memory) */
+	void* work,
+	/* Size of working buffer [byte] */
+	UINT len)
 {
 	const UINT n_fats = 1;		/* Number of FATs for FAT/FAT32 volume (1 or 2) */
 	const UINT n_rootdir = 512;	/* Number of root directory entries for FAT volume */
@@ -5534,10 +5538,10 @@ FRESULT f_mkfs (
 	part = LD2PT(vol);	/* Partition (0:create as new, 1-4:get from partition table) */
 
 	/* Check physical drive status */
-	stat = disk_initialize(pdrv);
+	stat = disk_initialize(disk);
 	if (stat & STA_NOINIT) return FR_NOT_READY;
 	if (stat & STA_PROTECT) return FR_WRITE_PROTECTED;
-	if (disk_ioctl(pdrv, GET_BLOCK_SIZE, &sz_blk) != RES_OK || !sz_blk || sz_blk > 32768 || (sz_blk & (sz_blk - 1))) sz_blk = 1;	/* Erase block to align data area */
+	if (disk_ioctl(disk, GET_BLOCK_SIZE, &sz_blk) != RES_OK || !sz_blk || sz_blk > 32768 || (sz_blk & (sz_blk - 1))) sz_blk = 1;	/* Erase block to align data area */
 #if FF_MAX_SS != FF_MIN_SS		/* Get sector size of the medium if variable sector size cfg. */
 	if (disk_ioctl(pdrv, GET_SECTOR_SIZE, &ss) != RES_OK) return FR_DISK_ERR;
 	if (ss > FF_MAX_SS || ss < FF_MIN_SS || (ss & (ss - 1))) return FR_DISK_ERR;
@@ -5564,7 +5568,7 @@ FRESULT f_mkfs (
 	/* Determine where the volume to be located (b_vol, sz_vol) */
 	if (FF_MULTI_PARTITION && part != 0) {
 		/* Get partition information from partition table in the MBR */
-		if (disk_read(pdrv, buf, 0, 1) != RES_OK) LEAVE_MKFS(FR_DISK_ERR);	/* Load MBR */
+		if (disk_read(disk, buf, 0, 1) != RES_OK) LEAVE_MKFS(FR_DISK_ERR);	/* Load MBR */
 		if (ld_word(buf + BS_55AA) != 0xAA55) LEAVE_MKFS(FR_MKFS_ABORTED);	/* Check if MBR is valid */
 		pte = buf + (MBR_Table + (part - 1) * SZ_PTE);
 		if (pte[PTE_System] == 0) LEAVE_MKFS(FR_MKFS_ABORTED);	/* No partition? */
@@ -5572,7 +5576,7 @@ FRESULT f_mkfs (
 		sz_vol = ld_dword(pte + PTE_SizLba);	/* Get volume size */
 	} else {
 		/* Create a single-partition in this function */
-		if (disk_ioctl(pdrv, GET_SECTOR_COUNT, &sz_vol) != RES_OK) LEAVE_MKFS(FR_DISK_ERR);
+		if (disk_ioctl(disk, GET_SECTOR_COUNT, &sz_vol) != RES_OK) LEAVE_MKFS(FR_DISK_ERR);
 		b_vol = (opt & FM_SFD) ? 0 : 63;		/* Volume start sector */
 		if (sz_vol < b_vol) LEAVE_MKFS(FR_MKFS_ABORTED);
 		sz_vol -= b_vol;						/* Volume size */
@@ -5869,19 +5873,19 @@ FRESULT f_mkfs (
 			mem_cpy(buf + BS_VolLab, "NO NAME    " "FAT     ", 19);	/* Volume label, FAT signature */
 		}
 		st_word(buf + BS_55AA, 0xAA55);					/* Signature (offset is fixed here regardless of sector size) */
-		if (disk_write(pdrv, buf, b_vol, 1) != RES_OK) LEAVE_MKFS(FR_DISK_ERR);	/* Write it to the VBR sector */
+		if (disk_write(disk, buf, b_vol, 1) != RES_OK) LEAVE_MKFS(FR_DISK_ERR);	/* Write it to the VBR sector */
 
 		/* Create FSINFO record if needed */
 		if (fmt == FS_FAT32) {
-			disk_write(pdrv, buf, b_vol + 6, 1);		/* Write backup VBR (VBR + 6) */
+			disk_write(disk, buf, b_vol + 6, 1);		/* Write backup VBR (VBR + 6) */
 			mem_set(buf, 0, ss);
 			st_dword(buf + FSI_LeadSig, 0x41615252);
 			st_dword(buf + FSI_StrucSig, 0x61417272);
 			st_dword(buf + FSI_Free_Count, n_clst - 1);	/* Number of free clusters */
 			st_dword(buf + FSI_Nxt_Free, 2);			/* Last allocated cluster# */
 			st_word(buf + BS_55AA, 0xAA55);
-			disk_write(pdrv, buf, b_vol + 7, 1);		/* Write backup FSINFO (VBR + 7) */
-			disk_write(pdrv, buf, b_vol + 1, 1);		/* Write original FSINFO (VBR + 1) */
+			disk_write(disk, buf, b_vol + 7, 1);		/* Write backup FSINFO (VBR + 7) */
+			disk_write(disk, buf, b_vol + 1, 1);		/* Write original FSINFO (VBR + 1) */
 		}
 
 		/* Initialize FAT area */
@@ -5898,7 +5902,7 @@ FRESULT f_mkfs (
 			nsect = sz_fat;		/* Number of FAT sectors */
 			do {	/* Fill FAT sectors */
 				n = (nsect > sz_buf) ? sz_buf : nsect;
-				if (disk_write(pdrv, buf, sect, (UINT)n) != RES_OK) LEAVE_MKFS(FR_DISK_ERR);
+				if (disk_write(disk, buf, sect, (UINT)n) != RES_OK) LEAVE_MKFS(FR_DISK_ERR);
 				mem_set(buf, 0, ss);
 				sect += n; nsect -= n;
 			} while (nsect);
@@ -5908,7 +5912,7 @@ FRESULT f_mkfs (
 		nsect = (fmt == FS_FAT32) ? pau : sz_dir;	/* Number of root directory sectors */
 		do {
 			n = (nsect > sz_buf) ? sz_buf : nsect;
-			if (disk_write(pdrv, buf, sect, (UINT)n) != RES_OK) LEAVE_MKFS(FR_DISK_ERR);
+			if (disk_write(disk, buf, sect, (UINT)n) != RES_OK) LEAVE_MKFS(FR_DISK_ERR);
 			sect += n; nsect -= n;
 		} while (nsect);
 	}
@@ -5931,9 +5935,9 @@ FRESULT f_mkfs (
 	/* Update partition information */
 	if (FF_MULTI_PARTITION && part != 0) {	/* Created in the existing partition */
 		/* Update system ID in the partition table */
-		if (disk_read(pdrv, buf, 0, 1) != RES_OK) LEAVE_MKFS(FR_DISK_ERR);	/* Read the MBR */
+		if (disk_read(disk, buf, 0, 1) != RES_OK) LEAVE_MKFS(FR_DISK_ERR);	/* Read the MBR */
 		buf[MBR_Table + (part - 1) * SZ_PTE + PTE_System] = sys;		/* Set system ID */
-		if (disk_write(pdrv, buf, 0, 1) != RES_OK) LEAVE_MKFS(FR_DISK_ERR);	/* Write it back to the MBR */
+		if (disk_write(disk, buf, 0, 1) != RES_OK) LEAVE_MKFS(FR_DISK_ERR);	/* Write it back to the MBR */
 	} else {								/* Created as a new single partition */
 		if (!(opt & FM_SFD)) {	/* Create partition table if in FDISK format */
 			mem_set(buf, 0, ss);
@@ -5950,11 +5954,11 @@ FRESULT f_mkfs (
 			pte[PTE_EdCyl] = (BYTE)n;			/* End cylinder */
 			st_dword(pte + PTE_StLba, b_vol);	/* Start offset in LBA */
 			st_dword(pte + PTE_SizLba, sz_vol);	/* Size in sectors */
-			if (disk_write(pdrv, buf, 0, 1) != RES_OK) LEAVE_MKFS(FR_DISK_ERR);	/* Write it to the MBR */
+			if (disk_write(disk, buf, 0, 1) != RES_OK) LEAVE_MKFS(FR_DISK_ERR);	/* Write it to the MBR */
 		}
 	}
 
-	if (disk_ioctl(pdrv, CTRL_SYNC, 0) != RES_OK) LEAVE_MKFS(FR_DISK_ERR);
+	if (disk_ioctl(disk, CTRL_SYNC, 0) != RES_OK) LEAVE_MKFS(FR_DISK_ERR);
 
 	LEAVE_MKFS(FR_OK);
 }
