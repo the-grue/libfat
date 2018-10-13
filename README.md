@@ -11,6 +11,7 @@ Here it is being refactored for the following:
  - Improving maintainability (smaller files, smaller functions, better variable names)
  - Improving documentation
  - Easing the integration of the library in operating system projects.
+ - Easing the integration of the library in hosted environments.
 
 License
 =======
