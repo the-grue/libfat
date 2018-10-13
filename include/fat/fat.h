@@ -89,7 +89,6 @@ FRESULT f_sync (FIL* fp);											/* Flush cached data of the writing file */
 FRESULT f_opendir (DIR* dp, const TCHAR* path);						/* Open a directory */
 FRESULT f_closedir (DIR* dp);										/* Close an open directory */
 FRESULT f_readdir (DIR* dp, FILINFO* fno);							/* Read a directory item */
-FRESULT f_mkdir (const TCHAR* path);								/* Create a sub directory */
 FRESULT f_unlink (const TCHAR* path);								/* Delete an existing file or directory */
 FRESULT f_rename (const TCHAR* path_old, const TCHAR* path_new);	/* Rename/Move a file or directory */
 FRESULT f_stat (const TCHAR* path, FILINFO* fno);					/* Get file status */

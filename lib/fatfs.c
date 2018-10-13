@@ -4650,88 +4650,90 @@ FRESULT f_unlink (
 /* Create a Directory                                                    */
 /*-----------------------------------------------------------------------*/
 
-FRESULT f_mkdir (
-	const TCHAR* path		/* Pointer to the directory path */
-)
+enum fat_error
+fat_mkdir(struct fat_fs *fs,
+          const char *path)
 {
-	FRESULT res;
-	DIR dj;
-	FATFS *fs;
+	enum fat_error res;
+	struct fat_dir dj;
 	BYTE *dir;
 	DWORD dcl, pcl, tm;
 	DEF_NAMBUF
 
+	dj.obj.fs = fs;
+	INIT_NAMBUF(fs);
 
-	/* Get logical drive */
-	res = find_volume(&path, &fs, FA_WRITE);
-	if (res == FR_OK) {
-		dj.obj.fs = fs;
-		INIT_NAMBUF(fs);
-		res = follow_path(&dj, path);			/* Follow the file path */
-		if (res == FR_OK) res = FR_EXIST;		/* Any object with same name is already existing */
-		if (FF_FS_RPATH && res == FR_NO_FILE && (dj.fn[NSFLAG] & NS_DOT)) {
-			res = FR_INVALID_NAME;
-		}
-		if (res == FR_NO_FILE) {				/* Can create a new directory */
-			dcl = create_chain(&dj.obj, 0);		/* Allocate a cluster for the new directory table */
-			dj.obj.objsize = (DWORD)fs->csize * SS(fs);
-			res = FR_OK;
-			if (dcl == 0) res = FR_DENIED;		/* No space to allocate a new cluster */
-			if (dcl == 1) res = FR_INT_ERR;
-			if (dcl == 0xFFFFFFFF) res = FR_DISK_ERR;
-			if (res == FR_OK) res = sync_window(fs);	/* Flush FAT */
-			tm = GET_FATTIME();
-			if (res == FR_OK) {					/* Initialize the new directory table */
-				res = dir_clear(fs, dcl);		/* Clean up the new table */
-				if (res == FR_OK && (!FF_FS_EXFAT || fs->fs_type != FS_EXFAT)) {	/* Create dot entries (FAT only) */
-					dir = fs->win;
-					fat_memset(dir + DIR_Name, ' ', 11);	/* Create "." entry */
-					dir[DIR_Name] = '.';
-					dir[DIR_Attr] = AM_DIR;
-					encode_uint32(dir + DIR_ModTime, tm);
-					st_clust(fs, dir, dcl);
-					fat_memcpy(dir + SZDIRE, dir, SZDIRE); /* Create ".." entry */
-					dir[SZDIRE + 1] = '.'; pcl = dj.obj.sclust;
-					st_clust(fs, dir + SZDIRE, pcl);
-					fs->wflag = 1;
-				}
-			}
-			if (res == FR_OK) {
-				res = dir_register(&dj);	/* Register the object to the directoy */
-			}
-			if (res == FR_OK) {
-#if FF_FS_EXFAT
-				if (fs->fs_type == FS_EXFAT) {	/* Initialize directory entry block */
-					encode_uint32(fs->dirbuf + XDIR_ModTime, tm);	/* Created time */
-					encode_uint32(fs->dirbuf + XDIR_FstClus, dcl);	/* Table start cluster */
-					encode_uint32(fs->dirbuf + XDIR_FileSize, (DWORD)dj.obj.objsize);	/* File size needs to be valid */
-					encode_uint32(fs->dirbuf + XDIR_ValidFileSize, (DWORD)dj.obj.objsize);
-					fs->dirbuf[XDIR_GenFlags] = 3;				/* Initialize the object flag */
-					fs->dirbuf[XDIR_Attr] = AM_DIR;				/* Attribute */
-					res = store_xdir(&dj);
-				} else
-#endif
-				{
-					dir = dj.dir;
-					encode_uint32(dir + DIR_ModTime, tm);	/* Created time */
-					st_clust(fs, dir, dcl);				/* Table start cluster */
-					dir[DIR_Attr] = AM_DIR;				/* Attribute */
-					fs->wflag = 1;
-				}
-				if (res == FR_OK) {
-					res = sync_fs(fs);
-				}
-			} else {
-				remove_chain(&dj.obj, dcl, 0);		/* Could not register, remove cluster chain */
-			}
-		}
-		FREE_NAMBUF();
+	/* Follow the file path */
+	res = follow_path(&dj, path);
+
+	/* Any object with same name is already existing */
+	if (res == FR_OK)
+	{
+		res = FR_EXIST;
 	}
+
+	if (FF_FS_RPATH && res == FR_NO_FILE && (dj.fn[NSFLAG] & NS_DOT)) {
+		res = FR_INVALID_NAME;
+	}
+
+	if (res == FR_NO_FILE) {				/* Can create a new directory */
+		dcl = create_chain(&dj.obj, 0);		/* Allocate a cluster for the new directory table */
+		dj.obj.objsize = (DWORD)fs->csize * SS(fs);
+		res = FR_OK;
+		if (dcl == 0) res = FR_DENIED;		/* No space to allocate a new cluster */
+		if (dcl == 1) res = FR_INT_ERR;
+		if (dcl == 0xFFFFFFFF) res = FR_DISK_ERR;
+		if (res == FR_OK) res = sync_window(fs);	/* Flush FAT */
+		tm = GET_FATTIME();
+		if (res == FR_OK) {					/* Initialize the new directory table */
+			res = dir_clear(fs, dcl);		/* Clean up the new table */
+			if (res == FR_OK && (!FF_FS_EXFAT || fs->fs_type != FS_EXFAT)) {	/* Create dot entries (FAT only) */
+				dir = fs->win;
+				fat_memset(dir + DIR_Name, ' ', 11);	/* Create "." entry */
+				dir[DIR_Name] = '.';
+				dir[DIR_Attr] = AM_DIR;
+				encode_uint32(dir + DIR_ModTime, tm);
+				st_clust(fs, dir, dcl);
+				fat_memcpy(dir + SZDIRE, dir, SZDIRE); /* Create ".." entry */
+				dir[SZDIRE + 1] = '.'; pcl = dj.obj.sclust;
+				st_clust(fs, dir + SZDIRE, pcl);
+				fs->wflag = 1;
+			}
+		}
+		if (res == FR_OK) {
+			res = dir_register(&dj);	/* Register the object to the directoy */
+		}
+		if (res == FR_OK) {
+#if FF_FS_EXFAT
+			if (fs->fs_type == FS_EXFAT) {	/* Initialize directory entry block */
+				encode_uint32(fs->dirbuf + XDIR_ModTime, tm);	/* Created time */
+				encode_uint32(fs->dirbuf + XDIR_FstClus, dcl);	/* Table start cluster */
+				encode_uint32(fs->dirbuf + XDIR_FileSize, (DWORD)dj.obj.objsize);	/* File size needs to be valid */
+				encode_uint32(fs->dirbuf + XDIR_ValidFileSize, (DWORD)dj.obj.objsize);
+				fs->dirbuf[XDIR_GenFlags] = 3;				/* Initialize the object flag */
+				fs->dirbuf[XDIR_Attr] = AM_DIR;				/* Attribute */
+				res = store_xdir(&dj);
+			} else
+#endif
+			{
+				dir = dj.dir;
+				encode_uint32(dir + DIR_ModTime, tm);	/* Created time */
+				st_clust(fs, dir, dcl);				/* Table start cluster */
+				dir[DIR_Attr] = AM_DIR;				/* Attribute */
+				fs->wflag = 1;
+			}
+			if (res == FR_OK) {
+				res = sync_fs(fs);
+			}
+		} else {
+			remove_chain(&dj.obj, dcl, 0);		/* Could not register, remove cluster chain */
+		}
+	}
+
+	FREE_NAMBUF();
 
 	LEAVE_FF(fs, res);
 }
-
-
 
 
 /*-----------------------------------------------------------------------*/

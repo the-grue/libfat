@@ -101,6 +101,18 @@ struct fat_fs
 	struct fat_disk *disk;
 };
 
+/** Creates a new directory.
+ * This function will fail if the directory already
+ * exists, or if the parent directory does not exist yet.
+ * @param fs The file system to create the directory on.
+ * @param path The path of the directory to create.
+ * @returns See @ref fat_error for return values.
+ * */
+
+enum fat_error
+fat_mkdir(struct fat_fs *fs,
+          const char *path);
+
 #ifdef __cplusplus
 }
 #endif

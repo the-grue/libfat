@@ -45,12 +45,12 @@ ffutil_mkdir(const struct common_opts *common_opts,
 		return EXIT_FAILURE;
 	}
 
-	FATFS FatFs;
+	struct fat_fs fs;
 
-	FatFs.disk = &fdisk.disk;
+	fs.disk = &fdisk.disk;
 
 	/* Create an FAT volume */
-	FRESULT result = f_mount(&FatFs, "", 0);
+	FRESULT result = f_mount(&fs, "", 1);
 	if (result != FR_OK)
 	{
 		fprintf(stderr, "Failed to mount FAT volume: %s\n", fat_strerror(result));
@@ -75,7 +75,7 @@ ffutil_mkdir(const struct common_opts *common_opts,
 			break;
 		}
 
-		result = f_mkdir(path);
+		result = fat_mkdir(&fs, path);
 		if (result != FR_OK)
 		{
 			fprintf(stderr, "Failed to create '%s': %s.\n", path, fat_strerror(result));
