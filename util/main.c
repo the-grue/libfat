@@ -104,6 +104,7 @@ print_help(void)
 	fprintf(stderr, "Commands\n");
 	fprintf(stderr, "	mkfs  : Create a new FAT file system.\n");
 	fprintf(stderr, "	mkdir : Create a new directory.\n");
+	fprintf(stderr, "	list  : List directory contents.\n");
 }
 
 static int
