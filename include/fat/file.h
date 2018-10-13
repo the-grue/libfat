@@ -26,6 +26,10 @@ extern "C"
 {
 #endif /* __cplusplus */
 
+/** Represents an open file from
+ * a FAT file system.
+ * */
+
 struct fat_file {
 	/* Object identifier (must be the 1st member to detect invalid object pointer) */
 	struct fat_object_info obj;
