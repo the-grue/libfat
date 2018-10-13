@@ -27,6 +27,7 @@ extern "C" {
 
 #include <fat/config.h>
 #include <fat/dir.h>
+#include <fat/file-info.h>
 #include <fat/fs.h>
 #include <fat/integer.h>
 
@@ -45,39 +46,6 @@ extern PARTITION VolToPart[];	/* Volume - Partition resolution table */
 extern const char* VolumeStr[FF_VOLUMES];	/* User defied volume ID */
 #endif
 #endif
-
-
-
-/* Type of path name strings on FatFs API */
-
-#ifndef _INC_TCHAR
-#define _INC_TCHAR
-
-#if FF_USE_LFN && FF_LFN_UNICODE == 1 	/* Unicode in UTF-16 encoding */
-typedef WCHAR TCHAR;
-#define _T(x) L ## x
-#define _TEXT(x) L ## x
-#elif FF_USE_LFN && FF_LFN_UNICODE == 2	/* Unicode in UTF-8 encoding */
-typedef char TCHAR;
-#define _T(x) u8 ## x
-#define _TEXT(x) u8 ## x
-#elif FF_USE_LFN && FF_LFN_UNICODE == 3	/* Unicode in UTF-32 encoding */
-typedef DWORD TCHAR;
-#define _T(x) U ## x
-#define _TEXT(x) U ## x
-#elif FF_USE_LFN && (FF_LFN_UNICODE < 0 || FF_LFN_UNICODE > 3)
-#error Wrong FF_LFN_UNICODE setting
-#else									/* ANSI/OEM code in SBCS/DBCS */
-typedef char TCHAR;
-#define _T(x) x
-#define _TEXT(x) x
-#endif
-
-#endif
-
-
-
-
 
 /* Filesystem object structure (FATFS) */
 
@@ -111,25 +79,13 @@ typedef struct {
 } FIL;
 
 
-
 /* Directory object structure (DIR) */
 
 typedef struct fat_dir DIR;
 
 /* File information structure (FILINFO) */
 
-typedef struct fat_file_info {
-	FSIZE_t	fsize;			/* File size */
-	WORD	fdate;			/* Modified date */
-	WORD	ftime;			/* Modified time */
-	BYTE	fattrib;		/* File attribute */
-#if FF_USE_LFN
-	TCHAR	altname[FF_SFN_BUF + 1];/* Altenative file name */
-	TCHAR	fname[FF_LFN_BUF + 1];	/* Primary file name */
-#else
-	TCHAR	fname[12 + 1];	/* File name */
-#endif
-} FILINFO;
+typedef struct fat_file_info FILINFO;
 
 
 
