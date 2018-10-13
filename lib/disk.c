@@ -117,7 +117,7 @@ get_sector_count(DWORD *sector_count)
 static DRESULT
 get_block_size(DWORD *block_size)
 {
-	*block_size = 1;
+	*block_size = 512;
 
 	return RES_OK;
 }
