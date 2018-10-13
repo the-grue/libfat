@@ -28,21 +28,191 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 struct mkfs_opts
 {
-	size_t volumn_size;
+	unsigned long long int volume_size;
+	unsigned long long int cluster_size;
 };
 
-static int
-parse_opts(struct mkfs_opts *opts,
-           struct arg_iterator *iterator)
+static void
+mkfs_opts_init(struct mkfs_opts *opts)
 {
-	(void) opts;
+	opts->volume_size = 64 * 1024 * 1024;
+	opts->cluster_size = 512;
+}
+
+static fatfs_bool
+is_nonopt(const struct arg_iterator *iterator)
+{
+	if (arg_iterator_at_end(iterator))
+	{
+		return FATFS_FALSE;
+	}
+
+	const char *nonopt = arg_iterator_get_current(iterator);
+
+	if (nonopt[0] == '-')
+	{
+		return FATFS_FALSE;
+	}
+
+	return FATFS_TRUE;
+}
+
+static int
+parse_volume_size(struct mkfs_opts *opts,
+                  struct arg_iterator *iterator)
+{
+	const char *key = arg_iterator_get_current(iterator);
+	if (key == NULL)
+	{
+		return -1;
+	}
+
+	if (strcmp(key, "--volume-size") != 0)
+	{
+		return 0;
+	}
+
+	arg_iterator_next(iterator);
+
+	if (arg_iterator_at_end(iterator))
+	{
+		fprintf(stderr, "The '%s' option requires a volume size afterwards.\n", key);
+		return -1;
+	}
+
+	const char *value = arg_iterator_get_current(iterator);
+
+	if (sscanf(value, "%llu", &opts->volume_size) != 1)
+	{
+		fprintf(stderr, "Failed to convert volume size '%s' to an integer.\n", value);
+		return -1;
+	}
+
+	/* convert to bytes */
+	opts->volume_size *= 1024 * 1024;
+
+	arg_iterator_next(iterator);
+
+	return 1;
+}
+
+static int
+parse_cluster_size(struct mkfs_opts *opts,
+                  struct arg_iterator *iterator)
+{
+	const char *key = arg_iterator_get_current(iterator);
+	if (key == NULL)
+	{
+		return -1;
+	}
+
+	if (strcmp(key, "--cluster-size") != 0)
+	{
+		return 0;
+	}
+
+	arg_iterator_next(iterator);
+
+	if (arg_iterator_at_end(iterator))
+	{
+		fprintf(stderr, "The '%s' option requires a cluster size afterwards.\n", key);
+		return -1;
+	}
+
+	const char *value = arg_iterator_get_current(iterator);
+
+	if (sscanf(value, "%llu", &opts->cluster_size) != 1)
+	{
+		fprintf(stderr, "Failed to convert cluster size '%s' to an integer.\n", value);
+		return -1;
+	}
+
+	arg_iterator_next(iterator);
+
+	return 1;
+}
+
+static void
+print_help(void)
+{
+	printf("Usage: ffutil mkfs [options]\n");
+	printf("\n");
+	printf("Options:\n");
+	printf("	-h, --help          : Print this help content.\n");
+	printf("	--cluster-size SIZE : Specify the cluster size (in bytes)\n");
+	printf("	--volume-size  SIZE : Specify the volume size (in MiB)\n");
+}
+
+static int
+parse_help(struct arg_iterator *iterator)
+{
+	const char *opt = arg_iterator_get_current(iterator);
+	if ((strcmp(opt, "-h") == 0)
+	 || (strcmp(opt, "--help") == 0))
+	{
+		print_help();
+		return -1;
+	}
+
+	return 0;
+}
+
+static int
+unknown_option(const struct arg_iterator *iterator)
+{
+	const char *opt = arg_iterator_get_current(iterator);
+	fprintf(stderr, "Unknown option '%s'.\n", opt);
+	fprintf(stderr, "\n");
+	fprintf(stderr, "See -h or --help for assistance.\n");
+	return EXIT_FAILURE;
+}
+
+static int
+mkfs_opts_parse(struct mkfs_opts *opts,
+                struct arg_iterator *iterator)
+{
+	int result = 0;
 
 	while (!arg_iterator_at_end(iterator)) {
 
-		arg_iterator_next(iterator);
+		result = parse_volume_size(opts, iterator);
+		if (result < 0)
+		{
+			return EXIT_FAILURE;
+		}
+		else if (result > 0)
+		{
+			continue;
+		}
+
+		result = parse_cluster_size(opts, iterator);
+		if (result < 0)
+		{
+			return EXIT_FAILURE;
+		}
+		else if (result > 0)
+		{
+			continue;
+		}
+
+		result = parse_help(iterator);
+		if (result < 0)
+		{
+			return EXIT_FAILURE;
+		}
+
+		if (is_nonopt(iterator))
+		{
+			break;
+		}
+		else
+		{
+			return unknown_option(iterator);
+		}
 	}
 
 	return EXIT_SUCCESS;
@@ -102,11 +272,13 @@ int
 ffutil_mkfs(const struct common_opts *common_opts,
             struct arg_iterator *iterator)
 {
-	struct mkfs_opts opts;
+	arg_iterator_next(iterator);
 
-	(void) common_opts;
+	struct mkfs_opts mkfs_opts;
 
-	int err = parse_opts(&opts, iterator);
+	mkfs_opts_init(&mkfs_opts);
+
+	int err = mkfs_opts_parse(&mkfs_opts, iterator);
 	if (err != 0)
 	{
 		return EXIT_FAILURE;
@@ -124,7 +296,7 @@ ffutil_mkfs(const struct common_opts *common_opts,
 		return EXIT_FAILURE;
 	}
 
-	err = ffutil_fdisk_resize(&fdisk, 64 * 1024 * 1024);
+	err = ffutil_fdisk_resize(&fdisk, mkfs_opts.volume_size);
 	if (err != 0)
 	{
 		fprintf(stderr, "Failed to resize '%s'.\n", common_opts->disk_path);
@@ -143,7 +315,8 @@ ffutil_mkfs(const struct common_opts *common_opts,
 	}
 
 	FATFS FatFs;
-	UINT clusterSize = 512;
+
+	FatFs.disk = &fdisk.disk;
 
 	/* Create an FAT volume */
 	FRESULT result = f_mount(&FatFs, "", 0);
@@ -155,7 +328,7 @@ ffutil_mkfs(const struct common_opts *common_opts,
 		return EXIT_FAILURE;
 	}
 
-	result = f_mkfs(&fdisk.disk, "", FM_FAT32, clusterSize, working_buffer, working_buffer_size);
+	result = f_mkfs(&fdisk.disk, "", FM_FAT32, mkfs_opts.cluster_size, working_buffer, working_buffer_size);
 	if (result != FR_OK) {
 		fprintf(stderr, "Failed to create FAT volume: %s.\n", fatfs_strerror(result));
 		free(working_buffer);
