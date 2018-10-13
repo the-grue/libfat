@@ -11,14 +11,14 @@
 
 #include <stdio.h>
 
-FILE *diskFile = NULL;
+FILE *disk = NULL;
 
 DSTATUS
-disk_status(BYTE driveIndex)
+disk_status(BYTE disk_index)
 {
-	(void) driveIndex;
+	(void) disk_index;
 
-	if (diskFile == NULL) {
+	if (disk == NULL) {
 		return STA_NOINIT;
 	} else {
 		return 0;
@@ -26,20 +26,20 @@ disk_status(BYTE driveIndex)
 }
 
 DSTATUS
-disk_initialize(BYTE driveIndex)
+disk_initialize(BYTE disk_index)
 {
-	(void) driveIndex;
+	(void) disk_index;
 
-	if (diskFile != NULL)
+	if (disk != NULL)
 	{
 		return 0;
 	}
 
-	diskFile = fopen("fat.img", "rb+");
-	if (diskFile == NULL)
+	disk = fopen("fat.img", "rb+");
+	if (disk == NULL)
 	{
-		diskFile = fopen("fat32.img", "wb+");
-		if (diskFile == NULL) {
+		disk = fopen("fat.img", "wb+");
+		if (disk == NULL) {
 			return STA_NOINIT;
 		}
 	}
@@ -48,22 +48,22 @@ disk_initialize(BYTE driveIndex)
 }
 
 DRESULT
-disk_read(BYTE driveIndex,
+disk_read(BYTE disk_index,
           BYTE *buff,
           DWORD sector,
           UINT count)
 {
-	(void) driveIndex;
+	(void) disk_index;
 
-	if (diskFile == NULL) {
+	if (disk == NULL) {
 		return RES_ERROR;
 	}
 
-	if (fseek(diskFile, sector * 512, SEEK_SET) != 0) {
+	if (fseek(disk, sector * 512, SEEK_SET) != 0) {
 		return RES_ERROR;
 	}
 
-	if (fread(buff, 512, count, diskFile) != count) {
+	if (fread(buff, 512, count, disk) != count) {
 		return RES_ERROR;
 	}
 
@@ -71,35 +71,74 @@ disk_read(BYTE driveIndex,
 }
 
 DRESULT
-disk_write(BYTE driveIndex,
+disk_write(BYTE disk_index,
            const BYTE *buff,
            DWORD sector,
            UINT count)
 {
-	(void) driveIndex;
+	(void) disk_index;
 
-	if (diskFile == NULL) {
+	if (disk == NULL) {
 		return RES_ERROR;
 	}
 
-	if (fseek(diskFile, sector * 512, SEEK_SET) != 0) {
+	if (fseek(disk, sector * 512, SEEK_SET) != 0) {
 		return RES_ERROR;
 	}
 
-	if (fwrite(buff, 512, count, diskFile) != count) {
+	if (fwrite(buff, 512, count, disk) != count) {
 		return RES_ERROR;
 	}
 
 	return RES_OK;
 }
 
+static DRESULT
+get_sector_count(DWORD *sector_count)
+{
+	if (disk == NULL) {
+		return RES_ERROR;
+	}
+
+	if (fseek(disk, 0L, SEEK_END) != 0) {
+		return RES_ERROR;
+	}
+
+	long size = ftell(disk);
+	if (size == -1L) {
+		return RES_ERROR;
+	}
+
+	*sector_count = (DWORD) size;
+
+	return RES_OK;
+}
+
+static DRESULT
+get_block_size(DWORD *block_size)
+{
+	*block_size = 1;
+
+	return RES_OK;
+}
+
 DRESULT
-disk_ioctl(BYTE driveIndex,
+disk_ioctl(BYTE disk_index,
            BYTE cmd,
            void *buff)
 {
-	(void) driveIndex;
-	(void) cmd;
-	(void) buff;
-	return RES_PARERR;
+	(void) disk_index;
+
+	switch (cmd) {
+	case CTRL_SYNC:
+		break;
+	case GET_SECTOR_COUNT:
+		return get_sector_count((DWORD *) buff);
+	case GET_BLOCK_SIZE:
+		return get_block_size((DWORD *) buff);
+	default:
+		return RES_PARERR;
+	}
+
+	return RES_OK;
 }
