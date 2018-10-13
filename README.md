@@ -24,7 +24,7 @@ On Debian systems, you can install it like this:
 sudo apt install cmake
 ```
 
-On Windows and macOS, there are downloads available from [https://cmake.org/download](their website.)
+On Windows and macOS, there are downloads available from [their website](https://cmake.org/download).
 
 Once it's installed, you can build the project like this:
 
