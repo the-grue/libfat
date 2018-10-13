@@ -277,11 +277,6 @@ TCHAR* f_gets (TCHAR* buff, int len, FIL* fp);						/* Get a string from the fil
 /*--------------------------------------------------------------*/
 /* Additional user defined functions                            */
 
-/* RTC function */
-#if !FF_FS_READONLY && !FF_FS_NORTC
-DWORD get_fattime (void);
-#endif
-
 /* LFN support functions */
 #if FF_USE_LFN >= 1						/* Code conversion (defined in unicode.c) */
 WCHAR ff_oem2uni (WCHAR oem, WORD cp);	/* OEM code to Unicode conversion */

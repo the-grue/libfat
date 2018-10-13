@@ -16,52 +16,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/** @file types.h
- * @brief Contains the type definitions
- * used throughout the project.
- * */
+#ifndef FAT_TIME_H
+#define FAT_TIME_H
 
-#ifndef FAT_TYPES_H
-#define FAT_TYPES_H
+#include <fat/types.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif /* __cplusplus */
 
-/** A boolean type.
- * Use the @ref FAT_FALSE
- * and @ref FAT_TRUE values
- * when assigning values to variables
- * of this type.
- * */
-
-typedef unsigned char fat_bool;
-
-/** The "false" value used by
- * boolean types.
- * */
-
-#define FAT_FALSE 0
-
-/** The "true" value used by
- * boolean types.
- * */
-
-#define FAT_TRUE 1
-
-/** An unsigned, 8-bit integer type.
- * */
-
-typedef unsigned char fat_uint8;
-
-/** An unsigned, 32-bit integer type.
- * */
-
-typedef unsigned int fat_uint32;
+fat_uint32 fat_get_time(void);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif /* __cplusplus */
 
-#endif /* FAT_TYPES_H */
+#endif /* FAT_TIME_H */
