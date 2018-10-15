@@ -25,6 +25,8 @@ extern "C" {
 
 #include <fat/integer.h>
 #include <fat/config.h>
+#include <fat/error.h>
+#include <fat/types.h>
 
 /** This structure represents a
  * single FAT file system instance.
@@ -32,68 +34,67 @@ extern "C" {
 
 struct fat_fs
 {
-	/* Filesystem type (0:N/A) */
+	/** Filesystem type (0:N/A) */
 	fat_uint8 fs_type;
-	/* Number of FATs (1 or 2) */
+	/** Number of FATs (1 or 2) */
 	fat_uint8 n_fats;
-	/* win[] flag (b0:dirty) */
+	/** win[] flag (b0:dirty) */
 	fat_uint8 wflag;
-	/* FSINFO flags (b7:disabled, b0:dirty) */
+	/** FSINFO flags (b7:disabled, b0:dirty) */
 	fat_uint8 fsi_flag;
-	/* Volume mount ID */
+	/** Volume mount ID */
 	fat_uint_least16 id;
-	/* Number of root directory entries (FAT12/16) */
+	/** Number of root directory entries (FAT12/16) */
 	fat_uint_least16 n_rootdir;
-	/* Cluster size [sectors] */
+	/** Cluster size [sectors] */
 	fat_uint_least16 csize;
 #if FF_MAX_SS != FF_MIN_SS
-	/* Sector size (512, 1024, 2048 or 4096) */
+	/** Sector size (512, 1024, 2048 or 4096) */
 	fat_uint_least16 ssize;
 #endif
 #if FF_USE_LFN
-	/* LFN working buffer */
+	/** LFN working buffer */
 	WCHAR* lfnbuf;
 #endif
 #if FF_FS_EXFAT
-	/* Directory entry block scratchpad buffer for exFAT */
+	/** Directory entry block scratchpad buffer for exFAT */
 	fat_uint8* dirbuf;
 #endif
 #if FF_FS_REENTRANT
-	/* Identifier of sync object */
+	/** Identifier of sync object */
 	FF_SYNC_t sobj;
 #endif
-	/* Last allocated cluster */
+	/** Last allocated cluster */
 	fat_uint_least32 last_clst;
-	/* Number of free clusters */
+	/** Number of free clusters */
 	fat_uint_least32 free_clst;
 #if FF_FS_RPATH
-	/* Current directory start cluster (0:root) */
+	/** Current directory start cluster (0:root) */
 	fat_uint_least32 cdir;
 #if FF_FS_EXFAT
-	/* Containing directory start cluster (invalid when cdir is 0) */
+	/** Containing directory start cluster (invalid when cdir is 0) */
 	fat_uint_least32 cdc_scl;
-	/* b31-b8:Size of containing directory, b7-b0: Chain status */
+	/** b31-b8:Size of containing directory, b7-b0: Chain status */
 	fat_uint_least32 cdc_size;
-	/* Offset in the containing directory (invalid when cdir is 0) */
+	/** Offset in the containing directory (invalid when cdir is 0) */
 	fat_uint_least32 cdc_ofs;
 #endif
 #endif
-	/* Number of FAT entries (number of clusters + 2) */
+	/** Number of FAT entries (number of clusters + 2) */
 	fat_uint_least32 n_fatent;
-	/* Size of an FAT [sectors] */
+	/** Size of an FAT [sectors] */
 	fat_uint_least32 fsize;
-	/* Volume base sector */
+	/** Volume base sector */
 	fat_uint_least32 volbase;
-	/* FAT base sector */
+	/** FAT base sector */
 	fat_uint_least32 fatbase;
-	/* Root directory base sector/cluster */
+	/** Root directory base sector/cluster */
 	fat_uint_least32 dirbase;
-	/* Data base sector */
+	/** Data base sector */
 	fat_uint_least32 database;
-	/* Current sector appearing in the win[] */
+	/** Current sector appearing in the win[] */
 	fat_uint_least32 winsect;
-	/* Disk access window for Directory, FAT (and file data at tiny cfg) */
-	/** The disk that the file system is contained in. */
+	/** Disk access window for Directory, FAT (and file data at tiny cfg) */
 	fat_uint8 win[FF_MAX_SS];
 	/** The disk that the file system resides on. */
 	struct fat_disk *disk;

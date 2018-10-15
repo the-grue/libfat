@@ -32,21 +32,21 @@ extern "C"
  * */
 
 struct fat_file_info {
-	/* File size */
+	/** File size */
 	FSIZE_t fsize;
-	/* Modified date */
+	/** Modified date */
 	fat_uint_least16 fdate;
-	/* Modified time */
+	/** Modified time */
 	fat_uint_least16 ftime;
-	/* File attribute */
+	/** File attribute */
 	fat_uint8 fattrib;
 #if FF_USE_LFN
-	/* Altenative file name */
+	/** Altenative file name */
 	TCHAR altname[FF_SFN_BUF + 1];
-	/* Primary file name */
+	/** Primary file name */
 	TCHAR fname[FF_LFN_BUF + 1];
 #else
-	/* File name */
+	/** File name */
 	TCHAR fname[12 + 1];
 #endif
 };
