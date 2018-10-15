@@ -278,7 +278,7 @@ ffutil_mkfs(const struct common_opts *common_opts,
 		return EXIT_FAILURE;
 	}
 
-	result = f_mkfs(&fdisk.disk, "", FM_FAT32, mkfs_opts.cluster_size, working_buffer, working_buffer_size);
+	result = f_mkfs(&fdisk.disk, "", FM_FAT32 | FM_SFD, mkfs_opts.cluster_size, working_buffer, working_buffer_size);
 	if (result != FR_OK) {
 		fprintf(stderr, "Failed to create FAT volume: %s.\n", fat_strerror(result));
 		free(working_buffer);
