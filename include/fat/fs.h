@@ -100,6 +100,13 @@ struct fat_fs
 	struct fat_disk *disk;
 };
 
+/** Initializes a file system structure.
+ * @param fs The file system structure to initialize.
+ * */
+
+void
+fat_fs_init(struct fat_fs *fs);
+
 /** Creates a new directory.
  * This function will fail if the directory already
  * exists, or if the parent directory does not exist yet.
