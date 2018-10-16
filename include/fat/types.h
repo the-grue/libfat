@@ -50,6 +50,12 @@ typedef unsigned char fat_bool;
 
 #define FAT_TRUE 1
 
+/** A magic value for pointers that are
+ * considered to be invalid or not yet assigned.
+ * */
+
+#define FAT_NULL ((void *) 0x00)
+
 /** An unsigned, 8-bit integer type.
  * */
 
