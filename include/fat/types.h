@@ -73,6 +73,12 @@ typedef unsigned long int fat_uint_least32;
 
 typedef unsigned long long int fat_uint_least64;
 
+/** Used as a type definition for the
+ * largest type available to the library.
+ * */
+
+typedef unsigned long long int fat_size;
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif /* __cplusplus */
